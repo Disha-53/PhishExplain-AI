@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PhishExplain AI</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div>
+          <div class="brand">PhishExplain AI</div>
+          <div class="tagline">Detect. Explain. Protect.</div>
+        </div>
+      </header>
+
+      <section class="panel">
+        <label for="message-input">Message or URL</label>
+        <textarea id="message-input" rows="6" placeholder="Paste an email, message, or suspicious URL"></textarea>
+      </section>
+
+      <div class="controls">
+        <button id="analyze-btn" type="button">Analyze</button>
+      </div>
+
+      <div id="status" class="status" aria-live="polite"></div>
+
+      <section id="result" class="result hidden">
+        <div class="risk-header">
+          <div id="risk-badge" class="risk-badge">LOW RISK</div>
+          <div class="score-wrap">
+            <div id="score-value" class="score-value">0</div>
+            <div class="score-label">PHISHING RISK</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Why?</h3>
+          <ul id="indicator-list" class="indicator-list"></ul>
+        </div>
+
+        <div class="section">
+          <h3>Model evidence</h3>
+          <div id="xai-list" class="xai-list"></div>
+        </div>
+
+        <div class="section">
+          <h3>Attack type</h3>
+          <div id="attack-type" class="card-value"></div>
+        </div>
+
+        <div class="section">
+          <h3>Cybersecurity context</h3>
+          <div id="knowledge-text" class="card-value"></div>
+        </div>
+
+        <div class="section">
+          <h3>Recommendation</h3>
+          <div id="recommendation" class="card-value"></div>
+        </div>
+
+        <div class="feedback">
+          <p>Was this analysis useful?</p>
+          <div class="feedback-row">
+            <button class="feedback-btn" data-feedback="yes">👍 Yes</button>
+            <button class="feedback-btn" data-feedback="no">👎 No</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="api.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
