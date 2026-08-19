@@ -1,53 +1,2276 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>PhishExplain AI Demo</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #0a1220;
-        color: #edf5ff;
-        margin: 40px;
-      }
-      .email {
-        max-width: 700px;
-        margin: 0 auto;
-        background: #111f2d;
-        border: 1px solid #233b56;
-        border-radius: 10px;
-        padding: 24px;
-      }
-      .meta {
-        color: #b7d7ff;
-        margin-bottom: 10px;
-      }
-      .subject {
-        font-weight: 700;
-        font-size: 20px;
-        margin-bottom: 20px;
-      }
-      .button {
-        display: inline-block;
-        margin-top: 20px;
-        background: #2563eb;
-        color: white;
-        padding: 10px 18px;
-        border-radius: 8px;
-        text-decoration: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="email">
-      <div class="meta">From: security@secure-bank.example</div>
-      <div class="meta">Subject: URGENT: Account Verification Required</div>
-      <div class="subject">We detected an authentication event associated with your account.</div>
-      <p>Your account will be suspended today unless you complete a required verification step.</p>
-      <p>Please verify your password immediately using the secure portal below:</p>
-      <a class="button" href="https://secure-bank.example-login.verify.portal.example/confirm">VERIFY ACCOUNT</a>
-      <p>Failure to act within 24 hours may result in account restrictions.</p>
-      <p>This is a fictional demonstration message for PhishExplain AI testing.</p>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PhishExplain-AI | Threat Intelligence</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#050912;
+    --panel:#0b1220;
+    --panel2:#0e1728;
+    --border:rgba(148,163,184,.12);
+
+    --text:#eef5ff;
+    --muted:#7d8da4;
+
+    --blue:#3b82f6;
+    --cyan:#06b6d4;
+    --red:#ef4444;
+    --orange:#f59e0b;
+    --green:#22c55e;
+    --purple:#8b5cf6;
+}
+
+body{
+    min-height:100vh;
+    font-family:Manrope,Segoe UI,Arial,sans-serif;
+    color:var(--text);
+    background:
+        linear-gradient(rgba(20,38,62,.18) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(20,38,62,.18) 1px,transparent 1px),
+        radial-gradient(circle at 10% 0%,rgba(37,99,235,.16),transparent 28%),
+        radial-gradient(circle at 90% 15%,rgba(124,58,237,.12),transparent 25%),
+        var(--bg);
+    background-size:42px 42px,42px 42px,auto,auto,auto;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    bottom:0;
+    width:245px;
+    padding:22px 15px;
+    background:rgba(5,10,18,.88);
+    border-right:1px solid var(--border);
+    backdrop-filter:blur(20px);
+    z-index:100;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:0 8px 30px;
+}
+
+.logo-icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    box-shadow:0 0 30px rgba(37,99,235,.3);
+    font-size:20px;
+}
+
+.logo h2{
+    font-size:17px;
+    letter-spacing:-.4px;
+}
+
+.logo h2 span{
+    color:#60a5fa;
+}
+
+.logo small{
+    display:block;
+    margin-top:3px;
+    color:#53657d;
+    font-size:7px;
+    letter-spacing:1.5px;
+}
+
+.menu-title{
+    padding:12px 10px 7px;
+    color:#44556b;
+    font-size:8px;
+    letter-spacing:1.5px;
+    font-weight:bold;
+}
+
+.nav{
+    width:100%;
+    padding:10px;
+    margin-bottom:4px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:#718399;
+    text-align:left;
+    cursor:pointer;
+    font-size:12px;
+    transition:.2s;
+}
+
+.nav:hover{
+    background:rgba(59,130,246,.08);
+    color:#dbeafe;
+}
+
+.nav.active{
+    color:#60a5fa;
+    background:rgba(59,130,246,.12);
+    box-shadow:inset 2px 0 #3b82f6;
+}
+
+.nav:focus-visible,
+.chips button:focus-visible,
+.indicator:focus-visible,
+.analyze:focus-visible,
+.signal-strip:focus-visible{
+    outline:2px solid #22d3ee;
+    outline-offset:2px;
+}
+
+.nav span{
+    display:inline-block;
+    width:25px;
+}
+
+.sidebar-status{
+    position:absolute;
+    left:15px;
+    right:15px;
+    bottom:18px;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#091321;
+}
+
+.online{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:9px;
+}
+
+.online-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#22c55e;
+    box-shadow:0 0 12px #22c55e;
+}
+
+.sidebar-status small{
+    display:block;
+    color:#52647b;
+    margin-top:5px;
+    margin-left:14px;
+    font-size:7px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:245px;
+    max-width:1580px;
+    padding:36px 42px 48px;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.eyebrow{
+    color:#4f6682;
+    font-size:8px;
+    letter-spacing:1.6px;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+header h1{
+    font-size:30px;
+    letter-spacing:-1.2px;
+}
+
+header p{
+    color:var(--muted);
+    margin-top:6px;
+    font-size:12px;
+}
+
+.signal-strip{
+    display:grid;
+    grid-template-columns:1.15fr 1fr auto;
+    align-items:center;
+    gap:24px;
+    min-height:82px;
+    margin:-5px 0 18px;
+    padding:15px 18px;
+    border:1px solid rgba(34,211,238,.15);
+    border-radius:13px;
+    background:linear-gradient(105deg,rgba(8,31,49,.92),rgba(7,17,30,.82));
+    box-shadow:0 12px 35px rgba(0,0,0,.16), inset 0 1px rgba(255,255,255,.03);
+    cursor:pointer;
+    transition:.25s;
+}
+
+.signal-strip:hover{
+    border-color:rgba(34,211,238,.4);
+    box-shadow:0 16px 42px rgba(0,0,0,.24), 0 0 28px rgba(34,211,238,.08);
+    transform:translateY(-2px);
+}
+
+.signal-kicker{
+    display:block;
+    color:#33d4df;
+    font-family:"DM Mono",monospace;
+    font-size:9px;
+    letter-spacing:1.3px;
+}
+
+.signal-copy strong{
+    display:block;
+    margin-top:5px;
+    font-size:14px;
+}
+
+.signal-copy small{
+    display:block;
+    margin-top:3px;
+    color:#7187a0;
+    font-size:10px;
+}
+
+.signal-visual{
+    position:relative;
+    height:47px;
+    overflow:hidden;
+    border-left:1px solid rgba(148,163,184,.11);
+    border-right:1px solid rgba(148,163,184,.11);
+    background:linear-gradient(90deg,transparent 49.5%,rgba(34,211,238,.12) 50%,transparent 50.5%);
+}
+
+.signal-visual::before,
+.signal-visual::after{
+    content:"";
+    position:absolute;
+    left:8%;
+    right:8%;
+    height:1px;
+    background:rgba(34,211,238,.22);
+    transform:rotate(-14deg);
+    box-shadow:0 18px rgba(34,211,238,.12);
+}
+
+.signal-visual::after{
+    transform:rotate(17deg);
+    background:rgba(96,165,250,.18);
+}
+
+.signal-node{
+    position:absolute;
+    width:7px;
+    height:7px;
+    border:2px solid #67e8f9;
+    border-radius:50%;
+    background:#071421;
+    box-shadow:0 0 12px rgba(34,211,238,.7);
+    z-index:1;
+}
+
+.signal-node:nth-child(1){left:18%;top:12px}
+.signal-node:nth-child(2){left:47%;top:28px;background:#ef4444;border-color:#fca5a5;box-shadow:0 0 13px rgba(239,68,68,.8)}
+.signal-node:nth-child(3){left:78%;top:8px}
+
+.signal-meta{
+    min-width:150px;
+    padding-left:4px;
+    text-align:right;
+}
+
+.signal-meta strong{
+    display:block;
+    color:#fca5a5;
+    font-size:21px;
+}
+
+.signal-meta small{
+    color:#7187a0;
+    font-family:"DM Mono",monospace;
+    font-size:9px;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.live{
+    padding:7px 10px;
+    border-radius:20px;
+    background:rgba(34,197,94,.06);
+    border:1px solid rgba(34,197,94,.13);
+    color:#4ade80;
+    font-size:8px;
+}
+
+.live i{
+    display:inline-block;
+    width:6px;
+    height:6px;
+    margin-right:5px;
+    border-radius:50%;
+    background:#22c55e;
+    box-shadow:0 0 10px #22c55e;
+}
+
+.profile{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:5px 10px 5px 5px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    background:#0a1321;
+}
+
+.avatar{
+    width:29px;
+    height:29px;
+    display:grid;
+    place-items:center;
+    border-radius:7px;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    font-size:8px;
+    font-weight:bold;
+}
+
+.profile strong{
+    display:block;
+    font-size:8px;
+}
+
+.profile small{
+    color:#52647b;
+    font-size:7px;
+}
+
+/* ================= KPI ================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:13px;
+    margin-bottom:16px;
+}
+
+.stat{
+    position:relative;
+    padding:15px;
+    min-height:125px;
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:13px;
+    background:linear-gradient(145deg,#0c1727,#070e19);
+    transition:.25s;
+}
+
+.stat:hover{
+    transform:translateY(-3px);
+    border-color:rgba(96,165,250,.25);
+}
+
+.stat.is-live .stat-icon{
+    color:#67e8f9;
+    background:rgba(34,211,238,.14);
+    box-shadow:0 0 18px rgba(34,211,238,.12);
+}
+
+.stat-label{
+    color:#60728a;
+    font-size:9px;
+    letter-spacing:1px;
+    font-weight:bold;
+}
+
+.stat-icon{
+    float:right;
+    width:27px;
+    height:27px;
+    display:grid;
+    place-items:center;
+    border-radius:7px;
+    background:rgba(59,130,246,.08);
+}
+
+.stat-value{
+    display:block;
+    margin-top:13px;
+    font-size:29px;
+    font-weight:800;
+}
+
+.stat-info{
+    margin-top:4px;
+    color:#53667d;
+    font-size:10px;
+}
+
+.up{
+    color:#4ade80;
+}
+
+.down{
+    color:#f87171;
+}
+
+/* ================= CARDS ================= */
+
+.grid{
+    display:grid;
+    grid-template-columns:1.35fr .65fr;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.card{
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:linear-gradient(145deg,rgba(13,24,41,.96),rgba(5,12,22,.97));
+    overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,.15);
+}
+
+.card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 17px;
+    border-bottom:1px solid var(--border);
+}
+
+.card-head h2{
+    font-size:14px;
+}
+
+.tag{
+    color:#50657e;
+    font-size:9px;
+    letter-spacing:1.4px;
+    font-weight:bold;
+    margin-bottom:4px;
+}
+
+/* ================= SCANNER ================= */
+
+.scanner{
+    min-height:410px;
+}
+
+.email-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:17px;
+}
+
+.sender{
+    width:37px;
+    height:37px;
+    display:grid;
+    place-items:center;
+    border-radius:9px;
+    background:linear-gradient(135deg,#1d4ed8,#0891b2);
+    font-size:9px;
+    font-weight:bold;
+}
+
+.sender-info strong{
+    display:block;
+    font-size:11px;
+}
+
+.sender-info small{
+    color:#53667d;
+    font-size:9px;
+}
+
+.subject{
+    padding:0 17px 14px;
+    font-size:18px;
+    font-weight:800;
+}
+
+.subject span{
+    padding:4px 6px;
+    margin-right:4px;
+    border-radius:4px;
+    color:#f87171;
+    background:rgba(239,68,68,.09);
+    font-size:7px;
+}
+
+.email-body{
+    padding:0 17px;
+    color:#aab8c9;
+    font-size:12px;
+    line-height:1.8;
+}
+
+.email-body p{
+    margin-bottom:11px;
+}
+
+.highlight{
+    padding:2px 4px;
+    border-radius:3px;
+    color:#fca5a5;
+    background:rgba(239,68,68,.08);
+}
+
+.verify{
+    display:inline-block;
+    padding:10px 16px;
+    margin:3px 0 13px;
+    border-radius:7px;
+    color:#fff;
+    text-decoration:none;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    font-size:10px;
+    font-weight:bold;
+    box-shadow:0 8px 25px rgba(37,99,235,.2);
+}
+
+.demo{
+    padding:8px;
+    border:1px solid rgba(59,130,246,.08);
+    border-radius:7px;
+    color:#586b82;
+    background:rgba(59,130,246,.03);
+    font-size:9px;
+}
+
+.chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+    padding:12px 17px 16px;
+    border-top:1px solid var(--border);
+    margin-top:10px;
+}
+
+.chips button{
+    padding:6px 8px;
+    border:1px solid rgba(239,68,68,.15);
+    border-radius:6px;
+    background:rgba(239,68,68,.04);
+    color:#aebdce;
+    font-size:9px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.chips button:hover{
+    background:rgba(239,68,68,.12);
+}
+
+/* ================= THREAT SCORE ================= */
+
+.threat{
+    min-height:410px;
+}
+
+.score-area{
+    display:flex;
+    justify-content:center;
+    padding:22px 0 8px;
+}
+
+.score-ring{
+    width:170px;
+    height:170px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:conic-gradient(
+        #ef4444 0deg,
+        #f59e0b 110deg,
+        #ef4444 245deg,
+        #172235 245deg
+    );
+    box-shadow:0 0 50px rgba(239,68,68,.12);
+}
+
+.score-inner{
+    width:140px;
+    height:140px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    border-radius:50%;
+    background:#07101d;
+}
+
+.score{
+    color:#f87171;
+    font-size:42px;
+    font-weight:900;
+}
+
+.score-inner small{
+    color:#596c83;
+    font-size:9px;
+}
+
+.score-inner label{
+    margin-top:7px;
+    color:#52647b;
+    font-size:8px;
+    letter-spacing:1.3px;
+}
+
+.risk{
+    text-align:center;
+    color:#f87171;
+    font-size:10px;
+    font-weight:bold;
+    letter-spacing:1px;
+}
+
+.risk span{
+    display:inline-block;
+    width:6px;
+    height:6px;
+    margin-right:5px;
+    border-radius:50%;
+    background:#ef4444;
+    box-shadow:0 0 10px #ef4444;
+}
+
+.analyze{
+    width:calc(100% - 34px);
+    margin:18px 17px 13px;
+    padding:11px;
+    border:0;
+    border-radius:8px;
+    color:#fff;
+    background:linear-gradient(135deg,#2563eb,#0891b2);
+    font-size:11px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.analyze:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px rgba(37,99,235,.25);
+}
+
+.confidence{
+    padding:0 17px;
+}
+
+.confidence-top{
+    display:flex;
+    justify-content:space-between;
+    color:#60738a;
+    font-size:9px;
+}
+
+.confidence-top strong{
+    color:#d1dae5;
+}
+
+.bar{
+    height:4px;
+    margin-top:6px;
+    border-radius:5px;
+    background:#172437;
+    overflow:hidden;
+}
+
+.bar span{
+    display:block;
+    width:94%;
+    height:100%;
+    background:linear-gradient(90deg,#2563eb,#06b6d4);
+}
+
+/* ================= ANALYTICS ================= */
+
+.analytics{
+    display:grid;
+    grid-template-columns:1.5fr .7fr;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.chart{
+    height:270px;
+    padding:12px 16px 15px;
+}
+
+.donut{
+    height:185px;
+    padding:10px 30px;
+}
+
+.legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px 12px;
+    padding:0 18px 15px;
+}
+
+.legend div{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    color:#66798f;
+    font-size:9px;
+}
+
+.legend i{
+    width:7px;
+    height:7px;
+    border-radius:2px;
+}
+
+.legend b{
+    margin-left:auto;
+    color:#cbd5e1;
+}
+
+.red{background:#ef4444}
+.orange{background:#f59e0b}
+.blue{background:#3b82f6}
+.green{background:#22c55e}
+
+/* ================= BOTTOM ================= */
+
+.bottom{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:15px;
+}
+
+.indicators{
+    padding:12px;
+}
+
+.indicator{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:9px;
+    margin-bottom:5px;
+    border-radius:7px;
+    background:#0b1625;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.indicator.is-selected{
+    background:linear-gradient(90deg,rgba(239,68,68,.14),rgba(239,68,68,.04));
+    box-shadow:inset 2px 0 #ef4444;
+}
+
+.indicator-detail{
+    display:none;
+    padding:0 10px 10px 44px;
+    color:#8092a9;
+    font-family:"DM Mono",monospace;
+    font-size:8px;
+    line-height:1.65;
+}
+
+.indicator.is-selected + .indicator-detail{
+    display:block;
+    animation:reveal .25s ease both;
+}
+
+@keyframes reveal{
+    from{opacity:0;transform:translateY(-4px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+.indicator:hover{
+    transform:translateX(3px);
+    background:#0e1b2d;
+}
+
+.ind-icon{
+    width:27px;
+    height:27px;
+    display:grid;
+    place-items:center;
+    border-radius:7px;
+    background:rgba(239,68,68,.08);
+}
+
+.ind-text{
+    flex:1;
+}
+
+.ind-text strong{
+    display:block;
+    font-size:10px;
+}
+
+.ind-text small{
+    color:#586b82;
+    font-size:9px;
+}
+
+.severity{
+    color:#f87171;
+    font-size:8px;
+    font-weight:bold;
+}
+
+.ai{
+    padding:15px;
+}
+
+.ai-message{
+    padding:10px;
+    border-radius:8px;
+    background:rgba(139,92,246,.06);
+    border:1px solid rgba(139,92,246,.1);
+    color:#9eacc0;
+    font-size:10px;
+    line-height:1.6;
+}
+
+.reason{
+    display:flex;
+    gap:8px;
+    padding:10px 0;
+    border-bottom:1px solid rgba(148,163,184,.05);
+}
+
+.reason b{
+    color:#a78bfa;
+    font-size:9px;
+}
+
+.reason strong{
+    display:block;
+    font-size:10px;
+}
+
+.reason small{
+    color:#596c83;
+    font-size:9px;
+}
+
+.url{
+    padding:14px;
+}
+
+.url-box{
+    padding:9px;
+    border-radius:7px;
+    background:#050b13;
+    border:1px solid var(--border);
+    color:#91a2b8;
+    font-family:monospace;
+    font-size:9px;
+    word-break:break-all;
+    margin-bottom:10px;
+}
+
+.url-row{
+    display:flex;
+    justify-content:space-between;
+    padding:7px 0;
+    border-bottom:1px solid rgba(148,163,184,.05);
+    font-size:9px;
+}
+
+.url-row span{
+    color:#5e7188;
+}
+
+.bad{
+    color:#f87171;
+}
+
+.good{
+    color:#4ade80;
+}
+
+/* ================= TOAST ================= */
+
+.toast{
+    position:fixed;
+    right:25px;
+    bottom:25px;
+    padding:11px 15px;
+    border:1px solid #263950;
+    border-radius:8px;
+    background:#0d1929;
+    color:#dbe5f0;
+    font-size:10px;
+    transform:translateY(80px);
+    opacity:0;
+    transition:.3s;
+    z-index:999;
+}
+
+.toast.show{
+    transform:translateY(0);
+    opacity:1;
+}
+
+.activity-pulse{
+    display:inline-block;
+    width:6px;
+    height:6px;
+    margin-right:6px;
+    border-radius:50%;
+    background:#22d3ee;
+    box-shadow:0 0 0 0 rgba(34,211,238,.5);
+    animation:pulse 1.8s infinite;
+}
+
+@keyframes pulse{
+    70%{box-shadow:0 0 0 7px rgba(34,211,238,0)}
+    100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}
+}
+
+.analysis-state{
+    color:#6f849d;
+    font-family:"DM Mono",monospace;
+    font-size:8px;
+    letter-spacing:.8px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1100px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .grid,
+    .analytics{
+        grid-template-columns:1fr;
+    }
+
+    .bottom{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media(max-width:800px){
+
+    .sidebar{
+        width:65px;
+    }
+
+    .logo h2,
+    .logo small,
+    .menu-title,
+    .nav{
+        font-size:0;
+    }
+
+    .nav span{
+        font-size:15px;
+    }
+
+    .sidebar-status{
+        display:none;
+    }
+
+    .main{
+        margin-left:65px;
+        width:calc(100% - 65px);
+        padding:20px 14px;
+    }
+
+    .signal-strip{
+        grid-template-columns:1fr auto;
+        gap:14px;
+    }
+
+    .signal-visual{
+        display:none;
+    }
+
+    .bottom{
+        grid-template-columns:1fr;
+    }
+
+    .profile{
+        display:none;
+    }
+}
+
+@media(max-width:500px){
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    header h1{
+        font-size:19px;
+    }
+
+    .signal-meta{
+        min-width:96px;
+    }
+
+    .signal-meta strong{
+        font-size:17px;
+    }
+
+    .live{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            🎣
+        </div>
+
+        <div>
+            <h2>Phish<span>Explain-AI</span></h2>
+            <small>AI THREAT INTELLIGENCE</small>
+        </div>
+
     </div>
-  </body>
+
+    <div class="menu-title">OVERVIEW</div>
+
+    <button class="nav active" onclick="navigate('Dashboard')">
+        <span>⌂</span> Dashboard
+    </button>
+
+    <button class="nav" onclick="navigate('Email Scanner')">
+        <span>◉</span> Email Scanner
+    </button>
+
+    <button class="nav" onclick="navigate('Analytics')">
+        <span>▥</span> Threat Analytics
+    </button>
+
+    <div class="menu-title">INTELLIGENCE</div>
+
+    <button class="nav" onclick="navigate('URL Intelligence')">
+        <span>↗</span> URL Intelligence
+    </button>
+
+    <button class="nav" onclick="navigate('AI Insights')">
+        <span>✦</span> AI Insights
+    </button>
+
+    <button class="nav" onclick="navigate('Scan History')">
+        <span>◷</span> Scan History
+    </button>
+
+    <div class="sidebar-status">
+
+        <div class="online">
+            <i class="online-dot"></i>
+            AI Engine Online
+        </div>
+
+        <small>Model v2.4.1 • Operational</small>
+
+    </div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="main">
+
+<header>
+
+    <div>
+
+        <div class="eyebrow">
+            PHISHEXPLAIN / AI THREAT INTELLIGENCE
+        </div>
+
+        <h1>PhishExplain-AI</h1>
+
+        <p>
+            Understand, detect and explain phishing threats with AI.
+        </p>
+
+    </div>
+
+    <div class="header-right">
+
+        <div class="live">
+            <i></i>
+            LIVE SYSTEM
+        </div>
+
+        <div class="profile">
+
+            <div class="avatar">
+                AI
+            </div>
+
+            <div>
+                <strong>Security Analyst</strong>
+                <small>Administrator</small>
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<section class="signal-strip" aria-label="Live threat telemetry" tabindex="0" onclick="cycleTelemetry()" onkeydown="if(event.key==='Enter'||event.key===' '){cycleTelemetry()}" title="Open live telemetry">
+
+    <div class="signal-copy">
+        <span class="signal-kicker" id="telemetryKicker"><span class="activity-pulse"></span>LIVE TELEMETRY / 08:42:19 UTC</span>
+        <strong id="telemetryTitle">Threat activity elevated</strong>
+        <small id="telemetryCopy">Credential phishing signals are trending above baseline.</small>
+    </div>
+
+    <div class="signal-visual" aria-hidden="true">
+        <span class="signal-node"></span>
+        <span class="signal-node"></span>
+        <span class="signal-node"></span>
+    </div>
+
+    <div class="signal-meta">
+        <strong id="telemetryDelta">+18.6%</strong>
+        <small id="telemetryMeta">VS. 7-DAY BASELINE</small>
+    </div>
+
+</section>
+
+
+<!-- STATISTICS -->
+
+<section class="stats">
+
+    <div class="stat is-live">
+
+        <div class="stat-label">
+            EMAILS ANALYZED
+        </div>
+
+        <div class="stat-icon">✉</div>
+
+        <strong class="stat-value counter" data-target="1284">
+            0
+        </strong>
+
+        <div class="stat-info">
+            <span class="up">↑ 12.4%</span>
+            from last week
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-label">
+            THREATS DETECTED
+        </div>
+
+        <div class="stat-icon">⚠</div>
+
+        <strong class="stat-value counter" data-target="143">
+            0
+        </strong>
+
+        <div class="stat-info">
+            <span class="down">↑ 8.2%</span>
+            suspicious activity
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-label">
+            DETECTION ACCURACY
+        </div>
+
+        <div class="stat-icon">✓</div>
+
+        <strong class="stat-value">
+            96.8%
+        </strong>
+
+        <div class="stat-info">
+            <span class="up">↑ 2.1%</span>
+            model performance
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-label">
+            AVG ANALYSIS TIME
+        </div>
+
+        <div class="stat-icon">ϟ</div>
+
+        <strong class="stat-value">
+            1.2s
+        </strong>
+
+        <div class="stat-info">
+            <span class="up">↓ 18%</span>
+            faster processing
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- EMAIL + THREAT -->
+
+<section class="grid">
+
+
+<div class="card scanner">
+
+    <div class="card-head">
+
+        <div>
+            <div class="tag">ANALYSIS TARGET</div>
+            <h2>Suspicious Email</h2>
+        </div>
+
+        <div class="analysis-state" id="analysisState">READY TO SCAN</div>
+
+    </div>
+
+
+    <div class="email-header">
+
+        <div class="sender">
+            SB
+        </div>
+
+        <div class="sender-info">
+
+            <strong>
+                security@secure-bank.example
+            </strong>
+
+            <small>
+                To: user@example.com • Today, 10:42 AM
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <div class="subject">
+
+        <span>URGENT</span>
+
+        Account Verification Required
+
+    </div>
+
+
+    <div class="email-body">
+
+        <p>
+            We detected an authentication event
+            associated with your account.
+        </p>
+
+        <p>
+
+            <span class="highlight" tabindex="0" onclick="indicator('Account suspension language')" onkeydown="if(event.key==='Enter'){indicator('Account suspension language')}" title="Inspect language signal">
+                Your account will be suspended today
+            </span>
+
+            unless you complete a required verification step.
+
+        </p>
+
+        <p>
+            Please verify your password immediately
+            using the secure portal below:
+        </p>
+
+        <a href="#" class="verify"
+           onclick="return false;">
+            🔐 VERIFY ACCOUNT
+        </a>
+
+        <p>
+            Failure to act within 24 hours may
+            result in account restrictions.
+        </p>
+
+        <div class="demo">
+
+            ⓘ Fictional demonstration message
+            for PhishExplain AI testing.
+
+        </div>
+
+    </div>
+
+
+    <div class="chips">
+
+        <button onclick="indicator('Urgency detected')">
+            ⚠ Urgency
+        </button>
+
+        <button onclick="indicator('Credential request detected')">
+            🔑 Credential Request
+        </button>
+
+        <button onclick="indicator('Artificial deadline detected')">
+            ⏱ Deadline
+        </button>
+
+        <button onclick="indicator('Suspicious URL detected')">
+            🔗 Suspicious URL
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- THREAT SCORE -->
+
+<div class="card threat">
+
+    <div class="card-head">
+
+        <div>
+            <div class="tag">AI CLASSIFICATION</div>
+            <h2>Threat Assessment</h2>
+        </div>
+
+        <div class="tag">
+            MODEL 2.4.1
+        </div>
+
+    </div>
+
+
+    <div class="score-area">
+
+        <div class="score-ring">
+
+            <div class="score-inner">
+
+                <div class="score" id="score">
+                    87
+                </div>
+
+                <small>/100</small>
+
+                <label>THREAT SCORE</label>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="risk">
+
+        <span></span>
+        HIGH RISK
+
+    </div>
+
+
+    <button class="analyze"
+            id="analyze"
+            onclick="analyzeEmail()">
+
+        ✦ Analyze Email With AI
+
+    </button>
+
+
+    <div class="confidence">
+
+        <div class="confidence-top">
+
+            <span>Model confidence</span>
+
+            <strong>94%</strong>
+
+        </div>
+
+        <div class="bar">
+            <span></span>
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- ANALYTICS -->
+
+<section class="analytics">
+
+
+<div class="card">
+
+    <div class="card-head">
+
+        <div>
+
+            <div class="tag">DATA ANALYTICS</div>
+
+            <h2>Threat Detection Trend</h2>
+
+        </div>
+
+        <div class="tag">
+            LAST 7 DAYS
+        </div>
+
+    </div>
+
+    <div class="chart">
+        <canvas id="trendChart"></canvas>
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="card-head">
+
+        <div>
+
+            <div class="tag">CLASSIFICATION</div>
+
+            <h2>Threat Distribution</h2>
+
+        </div>
+
+    </div>
+
+    <div class="donut">
+        <canvas id="donutChart"></canvas>
+    </div>
+
+    <div class="legend">
+
+        <div>
+            <i class="red"></i>
+            Phishing
+            <b>61%</b>
+        </div>
+
+        <div>
+            <i class="orange"></i>
+            Suspicious
+            <b>24%</b>
+        </div>
+
+        <div>
+            <i class="blue"></i>
+            Malware
+            <b>9%</b>
+        </div>
+
+        <div>
+            <i class="green"></i>
+            Safe
+            <b>6%</b>
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- BOTTOM -->
+
+<section class="bottom">
+
+
+<!-- INDICATORS -->
+
+<div class="card">
+
+    <div class="card-head">
+
+        <div>
+
+            <div class="tag">
+                EXPLAINABLE AI
+            </div>
+
+            <h2>Threat Indicators</h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="indicators">
+
+           <div class="indicator" tabindex="0"
+               onclick="indicator('Psychological pressure detected', this)" onkeydown="if(event.key==='Enter'){indicator('Psychological pressure detected', this)}">
+
+            <div class="ind-icon">
+                ⚠
+            </div>
+
+            <div class="ind-text">
+
+                <strong>
+                    Urgency & Fear
+                </strong>
+
+                <small>
+                    Creates panic and immediate action.
+                </small>
+
+            </div>
+
+            <div class="severity">
+                HIGH
+            </div>
+
+        </div>
+        <div class="indicator-detail">Signal weight 0.92 • language model matched fear and urgency patterns.</div>
+
+
+           <div class="indicator" tabindex="0"
+               onclick="indicator('Credential harvesting detected', this)" onkeydown="if(event.key==='Enter'){indicator('Credential harvesting detected', this)}">
+
+            <div class="ind-icon">
+                🔑
+            </div>
+
+            <div class="ind-text">
+
+                <strong>
+                    Credential Harvesting
+                </strong>
+
+                <small>
+                    Requests password verification.
+                </small>
+
+            </div>
+
+            <div class="severity">
+                HIGH
+            </div>
+
+        </div>
+        <div class="indicator-detail">Signal weight 0.97 • password verification request aligns with credential theft.</div>
+
+
+           <div class="indicator" tabindex="0"
+               onclick="indicator('Suspicious infrastructure detected', this)" onkeydown="if(event.key==='Enter'){indicator('Suspicious infrastructure detected', this)}">
+
+            <div class="ind-icon">
+                🔗
+            </div>
+
+            <div class="ind-text">
+
+                <strong>
+                    Suspicious URL
+                </strong>
+
+                <small>
+                    Domain structure is suspicious.
+                </small>
+
+            </div>
+
+            <div class="severity">
+                HIGH
+            </div>
+
+        </div>
+        <div class="indicator-detail">Signal weight 0.89 • claimed brand and destination infrastructure do not match.</div>
+
+
+        <div class="indicator" tabindex="0" onclick="indicator('Artificial deadline detected', this)">
+
+            <div class="ind-icon">
+                ⏱
+            </div>
+
+            <div class="ind-text">
+
+                <strong>
+                    Artificial Deadline
+                </strong>
+
+                <small>
+                    Uses time pressure.
+                </small>
+
+            </div>
+
+            <div class="severity">
+                MED
+            </div>
+
+        </div>
+        <div class="indicator-detail">Signal weight 0.76 • artificial 24-hour deadline increases pressure to act.</div>
+
+    </div>
+
+</div>
+
+
+<!-- URL INTELLIGENCE -->
+
+<div class="card">
+
+    <div class="card-head">
+
+        <div>
+
+            <div class="tag">
+                THREAT INTELLIGENCE
+            </div>
+
+            <h2>URL Intelligence</h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="url">
+
+        <div class="url-box">
+
+            https://secure-bank.example-login.
+            verify.portal.example/confirm
+
+        </div>
+
+
+        <div class="url-row">
+
+            <span>Domain Reputation</span>
+
+            <strong class="bad">
+                Suspicious
+            </strong>
+
+        </div>
+
+
+        <div class="url-row">
+
+            <span>HTTPS</span>
+
+            <strong class="good">
+                Present
+            </strong>
+
+        </div>
+
+
+        <div class="url-row">
+
+            <span>Brand Match</span>
+
+            <strong class="bad">
+                Failed
+            </strong>
+
+        </div>
+
+
+        <div class="url-row">
+
+            <span>Risk Score</span>
+
+            <strong class="bad">
+                91 / 100
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- AI EXPLANATION -->
+
+<div class="card">
+
+    <div class="card-head">
+
+        <div>
+
+            <div class="tag">
+                AI COPILOT
+            </div>
+
+            <h2>Why is this phishing?</h2>
+
+        </div>
+
+        <div class="tag">
+            ✦ AI
+        </div>
+
+    </div>
+
+
+    <div class="ai">
+
+        <div class="ai-message">
+
+            ✦
+
+            This email is highly likely to be
+            phishing because multiple independent
+            signals indicate possible credential theft.
+
+        </div>
+
+
+        <div class="reason">
+
+            <b>01</b>
+
+            <div>
+
+                <strong>
+                    Psychological pressure
+                </strong>
+
+                <small>
+                    Creates fear through account suspension threats.
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="reason">
+
+            <b>02</b>
+
+            <div>
+
+                <strong>
+                    Credential targeting
+                </strong>
+
+                <small>
+                    Requests password verification.
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="reason">
+
+            <b>03</b>
+
+            <div>
+
+                <strong>
+                    Suspicious infrastructure
+                </strong>
+
+                <small>
+                    URL does not clearly match the claimed organization.
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<div class="toast" id="toast">
+    Notification
+</div>
+
+
+<script>
+
+/* ===============================
+   COUNTERS
+================================ */
+
+document.querySelectorAll(".counter")
+.forEach(counter => {
+
+    const target =
+        Number(counter.dataset.target);
+
+    let value = 0;
+
+    const timer = setInterval(() => {
+
+        value += target / 45;
+
+        if(value >= target){
+
+            value = target;
+
+            clearInterval(timer);
+
+        }
+
+        counter.textContent =
+            Math.floor(value).toLocaleString();
+
+    },25);
+
+});
+
+
+/* ===============================
+   TOAST
+================================ */
+
+function showToast(message){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = message;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+
+        toast.classList.remove("show");
+
+    },2300);
+
+}
+
+
+/* ===============================
+   NAVIGATION
+================================ */
+
+function navigate(section, trigger){
+
+    document.querySelectorAll(".nav")
+    .forEach(item =>
+        item.classList.remove("active")
+    );
+
+    (trigger || event.currentTarget)
+        .classList.add("active");
+
+    const destinations = {
+        "Dashboard":"Overview is live",
+        "Email Scanner":"Email evidence selected",
+        "Analytics":"Threat trend workspace selected",
+        "URL Intelligence":"URL evidence selected",
+        "AI Insights":"Explainable signals selected",
+        "Scan History":"Scan history selected"
+    };
+
+    const targetMap = {
+        "Email Scanner":".scanner",
+        "Analytics":".analytics",
+        "URL Intelligence":".url",
+        "AI Insights":".ai",
+        "Dashboard":".signal-strip"
+    };
+
+    const target = document.querySelector(targetMap[section]);
+    if(target){
+        const focusTarget = target.closest(".card, .signal-strip");
+        focusTarget.scrollIntoView({behavior:"smooth", block:"center"});
+        focusTarget.classList.add("focus-target");
+        setTimeout(() => focusTarget.classList.remove("focus-target"), 900);
+    }
+
+    showToast(destinations[section] || section + " selected");
+
+}
+
+
+/* ===============================
+   INDICATORS
+================================ */
+
+function indicator(message, source){
+
+    if(source){
+        document.querySelectorAll(".indicator").forEach(item => item.classList.remove("is-selected"));
+        source.classList.add("is-selected");
+    }
+
+    showToast("AI Insight: " + message);
+
+}
+
+
+/* ===============================
+   AI ANALYSIS
+================================ */
+
+function analyzeEmail(){
+
+    const button =
+        document.getElementById("analyze");
+
+    const score =
+        document.getElementById("score");
+
+    const state = document.getElementById("analysisState");
+    const confidence = document.querySelector(".confidence-top strong");
+    const ring = document.querySelector(".score-ring");
+
+    button.disabled = true;
+
+    button.innerHTML =
+        "⟳ AI is analyzing...";
+    state.textContent = "SCANNING SIGNALS...";
+    state.style.color = "#fbbf24";
+
+    let value = 0;
+
+    const timer = setInterval(() => {
+
+        value +=
+            Math.floor(Math.random()*9)+3;
+
+        if(value >= 87){
+
+            value = 87;
+
+            clearInterval(timer);
+
+            button.disabled = false;
+
+            button.innerHTML =
+                "↻ Analyze Again";
+
+            state.textContent = "ANALYSIS COMPLETE / HIGH RISK";
+            state.style.color = "#f87171";
+            confidence.textContent = "97%";
+            ring.style.filter = "drop-shadow(0 0 18px rgba(239,68,68,.32))";
+
+            showToast(
+                "Analysis complete • HIGH RISK detected"
+            );
+
+        }
+
+        score.textContent = value;
+
+    },90);
+
+}
+
+let telemetryStep = 0;
+
+function cycleTelemetry(){
+    const states = [
+        ["Threat activity elevated", "Credential phishing signals are trending above baseline.", "+18.6%", "VS. 7-DAY BASELINE"],
+        ["Credential lures detected", "Seven campaigns share the same account verification pattern.", "07", "ACTIVE CAMPAIGNS"],
+        ["Containment window stable", "No new malware indicators observed in the last 15 minutes.", "04:12", "UNTIL NEXT SWEEP"]
+    ];
+    telemetryStep = (telemetryStep + 1) % states.length;
+    const state = states[telemetryStep];
+    document.getElementById("telemetryTitle").textContent = state[0];
+    document.getElementById("telemetryCopy").textContent = state[1];
+    document.getElementById("telemetryDelta").textContent = state[2];
+    document.getElementById("telemetryMeta").textContent = state[3];
+    showToast("Telemetry channel updated");
+}
+
+
+/* ===============================
+   TREND CHART
+================================ */
+
+new Chart(
+
+    document.getElementById("trendChart"),
+
+    {
+
+        type:"line",
+
+        data:{
+
+            labels:[
+                "Mon",
+                "Tue",
+                "Wed",
+                "Thu",
+                "Fri",
+                "Sat",
+                "Sun"
+            ],
+
+            datasets:[
+
+                {
+
+                    label:"Threats",
+
+                    data:[
+                        12,
+                        19,
+                        14,
+                        28,
+                        24,
+                        37,
+                        43
+                    ],
+
+                    borderColor:"#ef4444",
+
+                    backgroundColor:
+                        "rgba(239,68,68,.08)",
+
+                    fill:true,
+
+                    tension:.45,
+
+                    borderWidth:2,
+
+                    pointRadius:3,
+
+                    pointBackgroundColor:
+                        "#ef4444"
+
+                },
+
+                {
+
+                    label:"Safe",
+
+                    data:[
+                        44,
+                        52,
+                        48,
+                        59,
+                        56,
+                        66,
+                        73
+                    ],
+
+                    borderColor:"#3b82f6",
+
+                    backgroundColor:
+                        "transparent",
+
+                    tension:.45,
+
+                    borderWidth:2,
+
+                    pointRadius:2
+
+                }
+
+            ]
+
+        },
+
+        options:{
+
+            responsive:true,
+
+            maintainAspectRatio:false,
+
+            plugins:{
+
+                legend:{
+
+                    labels:{
+
+                        color:"#70839a",
+
+                        font:{
+                            size:8
+                        },
+
+                        boxWidth:9
+
+                    }
+
+                }
+
+            },
+
+            scales:{
+
+                x:{
+
+                    grid:{
+                        color:"rgba(148,163,184,.04)"
+                    },
+
+                    ticks:{
+                        color:"#52657c",
+                        font:{size:8}
+                    }
+
+                },
+
+                y:{
+
+                    beginAtZero:true,
+
+                    grid:{
+                        color:"rgba(148,163,184,.04)"
+                    },
+
+                    ticks:{
+                        color:"#52657c",
+                        font:{size:8}
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+);
+
+
+/* ===============================
+   DONUT CHART
+================================ */
+
+new Chart(
+
+    document.getElementById("donutChart"),
+
+    {
+
+        type:"doughnut",
+
+        data:{
+
+            labels:[
+                "Phishing",
+                "Suspicious",
+                "Malware",
+                "Safe"
+            ],
+
+            datasets:[{
+
+                data:[
+                    61,
+                    24,
+                    9,
+                    6
+                ],
+
+                backgroundColor:[
+                    "#ef4444",
+                    "#f59e0b",
+                    "#3b82f6",
+                    "#22c55e"
+                ],
+
+                borderWidth:0,
+
+                hoverOffset:8
+
+            }]
+
+        },
+
+        options:{
+
+            responsive:true,
+
+            maintainAspectRatio:false,
+
+            cutout:"72%",
+
+            plugins:{
+
+                legend:{
+                    display:false
+                }
+
+            }
+
+        }
+
+    }
+
+);
+
+</script>
+
+</body>
 </html>
