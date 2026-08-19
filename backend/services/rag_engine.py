@@ -1,61 +1,56 @@
 from __future__ import annotations
 
+import json
 import os
+from pathlib import Path
 from typing import Any
 
+import faiss
+from sentence_transformers import SentenceTransformer
 
-KNOWLEDGE_DIR = os.path.join("knowledge")
+from backend.config import KNOWLEDGE_DIR, RAG_EMBEDDING_MODEL, RAG_TOP_K, VECTOR_DB_DIR
 
 
 class RAGEngine:
-    def __init__(self, knowledge_dir: str | None = None):
-        self.knowledge_dir = knowledge_dir or KNOWLEDGE_DIR
-        self.documents = self._load_documents()
+    def __init__(self, knowledge_dir: str | None = None, vector_db_dir: str | None = None):
+        self.knowledge_dir = Path(knowledge_dir or KNOWLEDGE_DIR)
+        self.vector_db_dir = Path(vector_db_dir or VECTOR_DB_DIR)
+        self.index = None
+        self.chunks: list[dict[str, Any]] = []
+        self.embedder = None
+        self.status = "unavailable"
+        self._load_index()
 
-    def _load_documents(self) -> list[dict[str, str]]:
-        files = [
-            "phishing_basics.md",
-            "credential_phishing.md",
-            "spearphishing.md",
-            "malicious_urls.md",
-            "social_engineering.md",
-            "urgency_tactics.md",
-            "impersonation.md",
-            "cybersecurity_best_practices.md",
-            "mitre_attack_phishing.md",
-        ]
-        results: list[dict[str, str]] = []
-        for filename in files:
-            path = os.path.join(self.knowledge_dir, filename)
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
-                    content = f.read().strip()
-                if content:
-                    results.append({"title": filename.replace(".md", "").replace("_", " ").title(), "content": content})
-        if not results:
-            results.append({
-                "title": "Fallback knowledge",
-                "content": "Credential phishing attempts to steal account credentials using urgency and trusted-looking links. Verify requests using official channels independently.",
-            })
-        return results
+    def _load_index(self) -> None:
+        index_path = self.vector_db_dir / "knowledge.faiss"
+        metadata_path = self.vector_db_dir / "knowledge_chunks.json"
+        model_path = self.vector_db_dir / "knowledge_embedding_model.json"
+        if not index_path.exists() or not metadata_path.exists():
+            return
+        try:
+            self.index = faiss.read_index(str(index_path))
+            self.chunks = json.loads(metadata_path.read_text(encoding="utf-8"))
+            configured_model = RAG_EMBEDDING_MODEL
+            if model_path.exists():
+                configured_model = json.loads(model_path.read_text(encoding="utf-8")).get("model", configured_model)
+            self.embedder = SentenceTransformer(configured_model)
+            self.status = "ready"
+        except Exception:
+            self.index = None
+            self.chunks = []
+            self.embedder = None
+            self.status = "unavailable"
 
     def retrieve(self, query: str) -> dict[str, Any]:
-        term = (query or "").strip().lower()
-        if not term:
-            term = "credential phishing urgent login"
-
-        matches: list[dict[str, str]] = []
-        for doc in self.documents:
-            score = 0
-            text = doc["content"].lower()
-            for keyword in term.split():
-                if keyword in text:
-                    score += 1
-            if score > 0 or len(matches) == 0:
-                matches.append({"title": doc["title"], "content": doc["content"], "score": score})
-
-        if not matches:
-            return {"source": "fallback", "results": [{"title": "Fallback knowledge", "content": "Credential phishing attempts to steal account credentials using urgency and trusted-looking links. Verify requests using official channels independently."}]}
-
-        ordered = sorted(matches, key=lambda item: item["score"], reverse=True)[:3]
-        return {"source": "local knowledge base", "results": [{"title": item["title"], "content": item["content"]} for item in ordered]}
+        if self.status != "ready" or not (query or "").strip():
+            return {"source": "fallback (embedding index unavailable)", "status": self.status, "results": []}
+        vector = self.embedder.encode([query], normalize_embeddings=True)
+        scores, indices = self.index.search(vector, RAG_TOP_K)
+        results = []
+        for score, index in zip(scores[0], indices[0]):
+            if index < 0 or index >= len(self.chunks):
+                continue
+            item = dict(self.chunks[index])
+            item["similarity"] = round(float(score), 6)
+            results.append(item)
+        return {"source": "embedding index", "status": self.status, "results": results}

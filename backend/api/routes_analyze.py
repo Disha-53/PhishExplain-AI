@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from backend.schemas.analysis import AnalysisRequest
+from backend.schemas.analysis import AnalysisRequest, AnalysisResponse
 from backend.services.attack_classifier import classify_attack
 from backend.services.llm_engine import LLMExplanationEngine
 from backend.services.rag_engine import RAGEngine
@@ -10,6 +10,7 @@ from backend.services.rule_engine import detect_indicators
 from backend.services.risk_engine import compute_risk_score
 from backend.services.text_classifier import TextClassifier
 from backend.services.url_analyzer import analyze_url
+from backend.services.url_classifier import URLClassifier
 from backend.services.xai_engine import compute_model_feature_contributions, explain_feature_contributions
 from backend.utils.logging_config import get_logger
 
@@ -19,9 +20,10 @@ logger = get_logger("analyze")
 _text_model = TextClassifier()
 _rag = RAGEngine()
 _llm = LLMExplanationEngine()
+_url_model = URLClassifier()
 
 
-@router.post("/analyze")
+@router.post("/analyze", response_model=AnalysisResponse)
 def analyze(payload: AnalysisRequest):
     try:
         text = payload.text or ""
@@ -44,20 +46,29 @@ def analyze(payload: AnalysisRequest):
 
         text_result = _text_model.predict(text)
         url_result = analyze_url(url)
+        url_model_result = _url_model.predict(url)
+        url_result["ml_analysis"] = url_model_result
         indicators = detect_indicators(text)
+        url_risk = url_result.get("risk_score", 0)
+        if url_model_result["available"]:
+            # The heuristic and ML URL scores are both observable URL signals;
+            # average them rather than allowing either one to override the other.
+            url_risk = (url_risk + url_model_result["probability"] * 100) / 2
         risk = compute_risk_score(
             text_probability=text_result["probability"],
-            url_risk=url_result.get("risk_score", 0) / 100,
+            url_risk=url_risk,
             indicators=indicators,
         )
 
-        xai = compute_model_feature_contributions(text)
+        xai = compute_model_feature_contributions(text, _text_model.model, _text_model.vectorizer)
         summary = explain_feature_contributions(xai)
         if not indicators:
             summary = "The model did not identify strong phishing indicators in the message."
 
         attack_type = classify_attack(indicators, url_result)
-        query = " ".join([item["name"] for item in indicators]) + " " + (url or "")
+        query = " ".join(
+            [attack_type, *[item["name"] for item in indicators], url or "", text[:500]]
+        )
         knowledge = _rag.retrieve(query)
 
         label = "LIKELY PHISHING" if risk["risk_score"] >= 60 else "LIKELY SAFE"

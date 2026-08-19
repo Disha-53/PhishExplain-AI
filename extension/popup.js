@@ -1,4 +1,5 @@
 const input = document.getElementById('message-input');
+const urlInput = document.getElementById('url-input');
 const button = document.getElementById('analyze-btn');
 const status = document.getElementById('status');
 const result = document.getElementById('result');
@@ -12,7 +13,8 @@ const recommendation = document.getElementById('recommendation');
 
 async function analyze() {
   const text = input.value.trim();
-  if (!text) {
+  const url = urlInput.value.trim();
+  if (!text && !url) {
     status.textContent = 'Paste a message or URL to analyze.';
     return;
   }
@@ -22,13 +24,13 @@ async function analyze() {
   result.classList.add('hidden');
 
   try {
-    const payload = { text, url: '' };
+    const payload = { text, url };
     const data = await analyzeRequest(payload);
 
     renderResult(data);
     status.textContent = 'Analysis complete.';
   } catch (error) {
-    status.textContent = 'Backend unavailable. Please start the FastAPI server.';
+    status.textContent = error.message || 'Analysis failed.';
   } finally {
     button.disabled = false;
   }
@@ -59,13 +61,20 @@ function renderResult(data) {
   (data.xai || []).forEach((feature) => {
     const row = document.createElement('div');
     row.className = 'xai-item';
-    row.innerHTML = `
-      <div class="xai-label-row">
-        <span>${feature.feature}</span>
-        <span>${feature.impact}</span>
-      </div>
-      <div class="bar"><span class="bar-fill" style="width: ${Math.max(10, feature.impact * 100)}%"></span></div>
-    `;
+    const label = document.createElement('div');
+    label.className = 'xai-label-row';
+    const featureName = document.createElement('span');
+    featureName.textContent = feature.feature;
+    const impact = document.createElement('span');
+    impact.textContent = `${feature.direction || 'contribution'}: ${feature.impact}`;
+    label.append(featureName, impact);
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const fill = document.createElement('span');
+    fill.className = 'bar-fill';
+    fill.style.width = `${Math.max(10, Math.min(Math.abs(Number(feature.impact)) * 100, 100))}%`;
+    bar.appendChild(fill);
+    row.append(label, bar);
     xaiList.appendChild(row);
   });
 
@@ -80,7 +89,7 @@ function renderResult(data) {
 
   const knowledgeItems = data.knowledge && data.knowledge.results ? data.knowledge.results : [];
   if (knowledgeItems.length > 0) {
-    knowledgeText.innerHTML = knowledgeItems.map((item) => `<strong>${item.title}</strong><br>${item.content.substring(0, 220)}...`).join('<br><br>');
+    knowledgeText.textContent = knowledgeItems.map((item) => `${item.title}\n${item.text || item.content || ''}`).join('\n\n');
   } else {
     knowledgeText.textContent = 'No additional local cybersecurity context available.';
   }
@@ -89,6 +98,10 @@ function renderResult(data) {
 }
 
 button.addEventListener('click', analyze);
+
+checkHealth()
+  .then(() => { status.textContent = 'Backend connected.'; })
+  .catch((error) => { status.textContent = error.message || 'Backend unavailable.'; });
 
 document.querySelectorAll('.feedback-btn').forEach((buttonEl) => {
   buttonEl.addEventListener('click', () => {

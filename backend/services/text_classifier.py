@@ -1,25 +1,24 @@
 from __future__ import annotations
 
 import os
-import pickle
 from typing import Any
 
 import joblib
-import numpy as np
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+
+from backend.config import MODEL_DIR
 
 
 class TextClassifier:
     """TF-IDF + logistic regression text classifier with a simple fallback."""
 
-    MODEL_PATH = os.path.join("models", "text_model.joblib")
-    VECTOR_PATH = os.path.join("models", "text_vectorizer.joblib")
+    MODEL_PATH = MODEL_DIR / "text_model.joblib"
+    VECTOR_PATH = MODEL_DIR / "text_vectorizer.joblib"
 
     def __init__(self, model_path: str | None = None, vector_path: str | None = None):
-        self.model_path = model_path or self.MODEL_PATH
-        self.vector_path = vector_path or self.VECTOR_PATH
+        self.model_path = str(model_path or self.MODEL_PATH)
+        self.vector_path = str(vector_path or self.VECTOR_PATH)
         self.model = None
         self.vectorizer = None
         self._load_or_initialize()

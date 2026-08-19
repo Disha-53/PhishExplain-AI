@@ -19,6 +19,21 @@ def test_valid_request():
     assert "risk_score" in body
 
 
+def test_url_only_request():
+    response = client.post("/analyze", json={"text": "", "url": "http://192.168.1.10/login"})
+    assert response.status_code == 200
+    assert response.json()["url_analysis"]["is_valid"] is True
+
+
+def test_combined_request_contains_separate_evidence_sections():
+    response = client.post("/analyze", json={"text": "Verify your password immediately.", "url": "https://example.com/login"})
+    assert response.status_code == 200
+    body = response.json()
+    assert "indicators" in body
+    assert "xai" in body
+    assert "knowledge" in body
+
+
 def test_empty_request():
     response = client.post("/analyze", json={"text": "   ", "url": ""})
     assert response.status_code == 200

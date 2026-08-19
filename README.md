@@ -53,37 +53,39 @@ The extension uses a dark security-themed interface with sections for risk score
 - Pydantic
 - scikit-learn
 - pandas
-- numpy
-- joblib
-- Python dotenv
-- Manifest V3 Chrome extension
-- Vanilla JavaScript
-
-## ML Methodology
-
-The primary text model is TF-IDF + logistic regression. The training script creates a reproducible dataset split, fits the model, evaluates the classifier, and saves metrics to JSON. The URL analyzer is an interpretable static risk model rather than a fake real-time blacklist or reputation service.
-
 ## Explainable AI
 
 The system shows model feature contributions such as password, immediately, suspended, and verify. These are displayed as a simple bar chart with a human-language explanation describing which features most influenced the decision.
 
 ## RAG
 
-The knowledge base includes curated local documents covering phishing basics, credential phishing, spearphishing, malicious URLs, urgency tactics, impersonation, safe verification, best practices, and MITRE ATT&CK.
+## Detection Pipeline
 
-## Installation
+- **ML prediction:** text Logistic Regression and, when trained, the URL model.
+- **Rule-based indicators:** observable urgency, credential, threat, financial, link, and impersonation patterns.
+- **Model-derived XAI:** observed TF-IDF features multiplied by fitted model coefficients.
+- **RAG knowledge:** semantically retrieved cybersecurity guidance that never changes the prediction.
 
-### Quick start
+Text probability uses `0.0-1.0`; URL and final risk scores use `0-100`.
 
-```bash
+## ML Methodology
+
+The deployable text baseline is TF-IDF + Logistic Regression trained only from
+`data/processed/text/messages.csv`. The training script compares it with a
+Linear SVM and writes metrics only after a real dataset is present. The URL
+pipeline uses `backend/services/url_features.py` during both training and
+inference, excluding webpage-derived features that cannot be reproduced from a
+new URL.
 git clone https://github.com/Disha-53/PhishExplain-AI.git
 cd PhishExplain-AI
 python -m venv .venv
+## Embedding-Based RAG
 
-# Windows
-.venv\Scripts\activate
-
-# Linux/macOS
+Run `python scripts/build_rag_index.py` to chunk the local Markdown documents,
+embed them with `all-MiniLM-L6-v2`, and persist a FAISS index plus JSON metadata
+under `data/vector_db/`. The backend loads this index at startup and returns
+top-k similarity-ranked chunks. If it is absent, the API reports unavailable
+status instead of returning invented context.
 source .venv/bin/activate
 
 pip install -r requirements.txt
@@ -102,127 +104,135 @@ python -m uvicorn backend.main:app --reload
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+## Dataset Pipeline
+
+Dataset files are never committed. See [DATASETS.md](DATASETS.md) for verified
+source status, label mappings, licensing notes, and manual/authenticated
+download instructions. Run `python scripts/preprocess_text_data.py` before
+`python training/train_text_model.py`. Run the URL preprocessing and training
+commands after obtaining PhiUSIIL.
+python -m uvicorn backend.main:app --reload
+```
+# PhishExplain AI
+
+## Overview
+
+PhishExplain AI is a FastAPI phishing-analysis backend with a Chrome extension
+and a Streamlit API client. It analyzes message text and URLs while keeping ML
+prediction, observable rules, model-derived evidence, and cybersecurity
+knowledge clearly separate.
+
+## Architecture and Pipeline
+
+Both clients call the same `GET /health` and `POST /analyze` API.
+
+- **ML prediction:** TF-IDF + Logistic Regression text model and optional URL ML model.
+- **Rule evidence:** urgency, threat, credential, financial, link, and impersonation indicators.
+- **Model-derived XAI:** observed TF-IDF values multiplied by fitted model coefficients.
+- **Embedding RAG:** SentenceTransformer embeddings and FAISS similarity retrieval.
+- **Explanation:** deterministic, grounded output that does not require an LLM key.
+
+Text probability uses `0.0-1.0`; URL and final risk scores use `0-100`.
+
+## Installation
+
+```bash
+git clone https://github.com/Disha-53/PhishExplain-AI.git
+cd PhishExplain-AI
+python -m venv .venv
+```
+
+Windows: `.venv\Scripts\activate`
+Linux/macOS: `source .venv/bin/activate`
+
+```bash
 pip install -r requirements.txt
+python scripts/verify_setup.py
+python scripts/build_rag_index.py
 python -m uvicorn backend.main:app --reload
 ```
 
-## Chrome Extension Installation
+Copy `.env.example` to `.env` for local configuration. Never commit `.env` or
+credentials.
 
-1. Open Chrome.
-2. Visit `chrome://extensions`.
-3. Turn on Developer Mode.
-4. Click Load unpacked.
-5. Select the `extension/` folder.
+## Dataset and Training
 
-### Extension permissions
+Dataset files are never committed. See [DATASETS.md](DATASETS.md) for verified
+source status, labels, licensing, and authentication/manual download steps.
 
-The extension only requests minimal permissions needed to read the active tab and communicate with the local backend:
+```bash
+python scripts/download_datasets.py nazario
+python scripts/preprocess_text_data.py
+python training/train_text_model.py
+python scripts/download_datasets.py phiusiil
+python scripts/preprocess_url_data.py
+python training/train_url_model.py
+```
 
-- `activeTab`
-- `scripting`
-- `storage`
-- `http://127.0.0.1:8000/*`
+Training refuses to run without processed real data. Text compares Logistic
+Regression with Linear SVM; URL compares Logistic Regression with Random Forest.
+Metrics and metadata are written under `models/` and `reports/` only after an
+actual training run.
 
-This avoids broad access such as `<all_urls>` unless a real requirement arises later.
+## RAG
 
-## Usage
-
-1. Start the backend.
-2. Load the extension in Chrome.
-3. Paste a message or URL into the popup, or highlight text on a page.
-4. Click Analyze.
-5. Review the resulting risk score, model evidence, indicators, cybersecurity context, and recommendation.
+`python scripts/build_rag_index.py` chunks the repository Markdown documents
+with 180-word chunks and 30-word overlap, embeds them with the configured
+`all-MiniLM-L6-v2` model, and writes `data/vector_db/knowledge.faiss` plus
+`knowledge_chunks.json`. The backend retrieves configurable top-k chunks. If no
+index exists, it returns an explicit unavailable status and empty results.
 
 ## API
 
-### GET /health
+`GET /health` returns `{ "status": "ok", "version": "1.0.0" }`.
+
+`POST /analyze` accepts text, URL, or both:
 
 ```json
-{
-  "status": "ok",
-  "version": "1.0.0"
-}
+{"text": "Verify your account immediately", "url": "https://example.com/login"}
 ```
 
-### POST /analyze
+The response includes classification, risk score, severity, attack type,
+indicators, URL analysis, XAI evidence, RAG context, explanation, and
+recommendation.
 
-Request:
+## Chrome Extension
 
-```json
-{
-  "text": "Your account will be suspended. Verify your password immediately.",
-  "url": "http://example-login.com"
-}
+Load `extension/` from `chrome://extensions` with Developer Mode enabled. The
+popup checks `/health`, supports text-only/URL-only/combined analysis, uses a
+10-second request timeout, and safely renders returned content. The API URL
+defaults to `http://127.0.0.1:8000`; set `chrome.storage.local.apiBaseUrl` to a
+deployed HTTPS backend and add that host to `host_permissions` before packaging.
+
+## Streamlit
+
+Streamlit calls the backend and does not load duplicate ML models:
+
+```powershell
+$env:BACKEND_URL="http://127.0.0.1:8000"
+streamlit run streamlit_app.py
 ```
 
-Response:
+Use `BACKEND_URL` or Streamlit secrets in production.
 
-```json
-{
-  "label": "LIKELY PHISHING",
-  "risk_score": 94,
-  "severity": "CRITICAL",
-  "attack_type": "Credential Phishing",
-  "indicators": ["Urgency", "Credential request"],
-  "xai": [{"feature": "password", "impact": 0.21}],
-  "url_analysis": {"risk_score": 80, "label": "HIGH", "summary": "Static URL analysis"},
-  "knowledge": {"source": "local knowledge base", "results": []},
-  "explanation": "This message is considered high risk because it contains urgency and credential-related language.",
-  "recommendation": "Do not click the link. Verify the request through the organization's official website."
-}
-```
+## Configuration and Deployment
 
-## Dataset
+Supported settings include `ENVIRONMENT`, `API_HOST`, `API_PORT`/`PORT`,
+`CORS_ORIGINS`, `MODEL_DIR`, `KNOWLEDGE_DIR`, `VECTOR_DB_DIR`, `RAG_TOP_K`, and
+`RAG_EMBEDDING_MODEL`. Production should provide exact CORS origins and host
+model/FAISS artifacts through release storage or a model registry. The service
+does not recreate production artifacts from synthetic data.
 
-This prototype uses a compact local synthetic dataset for reproducible training and demos. For production use, expand this with a larger labelled corpus and better evaluation coverage.
+## Limitations and Security
 
-## Evaluation
-
-The training script captures:
-
-- Accuracy
-- Precision
-- Recall
-- F1 score
-- ROC-AUC
-- Confusion matrix
-
-These metrics are saved to `models/text_metrics.json` after training.
-
-## Limitations
-
-- This is a local prototype, not a production-grade detection service.
-- URL analysis is static and explainable rather than using real-time threat intelligence.
-- The knowledge base is local and curated rather than a full enterprise corpus.
-- The system intentionally avoids over-claiming certainty.
-
-## Privacy
-
-The extension is designed to work locally with a localhost backend. If an external LLM provider is later configured, the user should be explicitly informed that content may be sent to that provider. No secrets are committed to the repository.
-
-## Security
-
-- No API keys are hard-coded
-- Use environment variables for optional AI integrations
-- Untrusted content is treated as evidence, not instructions
-- Request size is limited in the API schema and route logic
-- The UI avoids unsafe raw HTML rendering
-
-## Future Scope
-
-- Gmail and Outlook integration
-- Microsoft and messaging platform integrations
-- Multilingual phishing detection
-- Attachment analysis
-- Real-time threat intelligence
-- Domain reputation services
-- Enterprise dashboards
-
-## Team
-
-This project is a prototype for explainable phishing detection and cybersecurity awareness.
+The repository does not claim real-world accuracy until the documented datasets
+are downloaded, processed, trained, and evaluated locally. URL analysis remains
+static and has no reputation lookup. The cited AI-generated-phishing GitHub
+source currently returns 404 and is not replaced silently. No external LLM is
+required. Untrusted text is treated as evidence, secrets are environment-only,
+and backend content is rendered with safe DOM APIs in the extension.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT. Dataset licenses and terms remain those of their publishers.
+- Multilingual phishing detection

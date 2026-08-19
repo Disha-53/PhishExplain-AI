@@ -1,0 +1,91 @@
+{
+  "algorithm": "random_forest",
+  "features": [
+    "url_length",
+    "hostname_length",
+    "path_length",
+    "query_length",
+    "dot_count",
+    "hyphen_count",
+    "digit_count",
+    "special_character_count",
+    "subdomain_depth",
+    "uses_https",
+    "is_ip_hostname",
+    "encoded_character_count",
+    "url_entropy",
+    "suspicious_keyword_count",
+    "punycode_indicator",
+    "uncommon_port",
+    "path_depth"
+  ],
+  "dataset": "C:\\Users\\ACER\\Phishing\\PhishExplain-AI\\data\\processed\\urls\\urls.csv",
+  "label_mapping": {
+    "0": "LEGITIMATE",
+    "1": "PHISHING"
+  },
+  "trained_at": "2026-08-19T07:00:02.795948+00:00",
+  "scikit_learn_version": "1.9.0",
+  "selected_metrics": {
+    "accuracy": 0.995114,
+    "precision": 0.99685,
+    "recall": 0.991693,
+    "f1": 0.994265,
+    "roc_auc": 0.996699,
+    "pr_auc": 0.99724,
+    "confusion_matrix": [
+      [
+        26907,
+        63
+      ],
+      [
+        167,
+        19937
+      ]
+    ],
+    "false_positive_rate": 0.002336,
+    "false_negative_rate": 0.008307
+  },
+  "candidate_metrics": {
+    "logistic_regression": {
+      "accuracy": 0.993776,
+      "precision": 0.998791,
+      "recall": 0.98662,
+      "f1": 0.992668,
+      "roc_auc": 0.996403,
+      "pr_auc": 0.997243,
+      "confusion_matrix": [
+        [
+          26946,
+          24
+        ],
+        [
+          269,
+          19835
+        ]
+      ],
+      "false_positive_rate": 0.00089,
+      "false_negative_rate": 0.01338
+    },
+    "random_forest": {
+      "accuracy": 0.995114,
+      "precision": 0.99685,
+      "recall": 0.991693,
+      "f1": 0.994265,
+      "roc_auc": 0.996699,
+      "pr_auc": 0.99724,
+      "confusion_matrix": [
+        [
+          26907,
+          63
+        ],
+        [
+          167,
+          19937
+        ]
+      ],
+      "false_positive_rate": 0.002336,
+      "false_negative_rate": 0.008307
+    }
+  }
+}

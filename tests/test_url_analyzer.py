@@ -1,4 +1,5 @@
 from backend.services.url_analyzer import analyze_url
+from backend.services.url_features import FEATURE_NAMES, extract_url_features
 
 
 def test_https_url():
@@ -25,3 +26,8 @@ def test_long_url():
 def test_malformed_url():
     result = analyze_url("not-a-valid-url")
     assert result["risk_score"] >= 0
+
+
+def test_shared_url_feature_schema_is_stable():
+    features = extract_url_features("https://example.com/login")
+    assert list(features) == FEATURE_NAMES

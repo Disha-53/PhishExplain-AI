@@ -8,3 +8,13 @@ models/*.joblib
 *.log
 .pytest_cache/
 .DS_Store
+data/raw/
+data/processed/
+data/vector_db/
+*.csv
+*.parquet
+*.mbox
+__pycache__/
+*.py[cod]
+*.env
+!.env.example

@@ -16,4 +16,13 @@ This trains a TF-IDF + logistic regression classifier and saves:
 
 ## URL model
 
-A rules-based URL analyzer is used instead of a large trained model for interpretability. This remains transparent and local.
+After downloading and preprocessing PhiUSIIL, run:
+
+```bash
+python scripts/preprocess_url_data.py
+python training/train_url_model.py
+```
+
+The deployable model uses only features from `backend/services/url_features.py`,
+which is also used during API inference. The heuristic URL analyzer remains as
+separate observable evidence.

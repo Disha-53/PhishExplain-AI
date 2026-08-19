@@ -10,8 +10,16 @@ STANDARD_WEIGHTS = {
 }
 
 
-def compute_risk_score(text_probability: float, url_risk: float = 0.0, indicators: list[dict[str, Any]] | None = None, weights: dict[str, float] | None = None) -> dict:
+def compute_risk_score(
+    text_probability: float = 0.0,
+    url_risk: float = 0.0,
+    indicators: list[dict[str, Any]] | None = None,
+    weights: dict[str, float] | None = None,
+) -> dict:
+    """Fuse module scores using probabilities in [0, 1] and URL scores in [0, 100]."""
     weights = weights or STANDARD_WEIGHTS
+    text_probability = max(0.0, min(float(text_probability), 1.0))
+    url_risk = max(0.0, min(float(url_risk), 100.0))
     indicator_count = len(indicators or [])
     indicator_signal = min(indicator_count * 12, 30)
 
