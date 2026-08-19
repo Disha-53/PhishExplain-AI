@@ -215,6 +215,22 @@ streamlit run streamlit_app.py
 
 Use `BACKEND_URL` or Streamlit secrets in production.
 
+## Dashboard Frontend
+
+The merged visual dashboard is a static FastAPI client at
+`demo/phishing-demo.html`. Start it from the repository root after configuring
+the backend CORS origins:
+
+```powershell
+$env:CORS_ORIGINS="http://127.0.0.1:5500,http://localhost:5500"
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+python -m http.server 5500 --directory demo --bind 127.0.0.1
+```
+
+Open `http://127.0.0.1:5500/phishing-demo.html`. The dashboard stores an
+optional production backend URL in `localStorage` under
+`phishExplainApiUrl`; otherwise it uses `http://127.0.0.1:8000`.
+
 ## Configuration and Deployment
 
 Supported settings include `ENVIRONMENT`, `API_HOST`, `API_PORT`/`PORT`,

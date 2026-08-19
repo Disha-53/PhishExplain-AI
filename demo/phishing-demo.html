@@ -566,6 +566,49 @@ header p{
     font-size:9px;
 }
 
+.dashboard-inputs{
+    display:grid;
+    gap:8px;
+    padding:0 17px 16px;
+}
+
+.dashboard-inputs label{
+    color:#718399;
+    font-family:"DM Mono",monospace;
+    font-size:8px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.dashboard-inputs textarea,
+.dashboard-inputs input{
+    width:100%;
+    border:1px solid rgba(96,165,250,.18);
+    border-radius:8px;
+    padding:10px;
+    color:#dbeafe;
+    background:#07101d;
+    font:11px Manrope,Segoe UI,Arial,sans-serif;
+}
+
+.dashboard-inputs textarea{
+    min-height:92px;
+    resize:vertical;
+}
+
+.dashboard-inputs textarea:focus,
+.dashboard-inputs input:focus{
+    outline:2px solid rgba(34,211,238,.55);
+    outline-offset:1px;
+}
+
+.backend-status{
+    min-height:16px;
+    color:#718399;
+    font-family:"DM Mono",monospace;
+    font-size:8px;
+}
+
 .chips{
     display:flex;
     flex-wrap:wrap;
@@ -1284,6 +1327,19 @@ header p{
     </div>
 
 
+    <div class="dashboard-inputs">
+
+        <label for="dashboard-text">Message or email text</label>
+        <textarea id="dashboard-text" placeholder="Paste suspicious email or message text"></textarea>
+
+        <label for="dashboard-url">Optional URL</label>
+        <input id="dashboard-url" type="url" placeholder="https://example.com/login" />
+
+        <div class="backend-status" id="backendStatus" aria-live="polite">Checking backend connection...</div>
+
+    </div>
+
+
     <div class="email-header">
 
         <div class="sender">
@@ -1404,7 +1460,7 @@ header p{
             <div class="score-inner">
 
                 <div class="score" id="score">
-                    87
+                    0
                 </div>
 
                 <small>/100</small>
@@ -1421,7 +1477,7 @@ header p{
     <div class="risk">
 
         <span></span>
-        HIGH RISK
+        <span id="riskLabel">READY TO ANALYZE</span>
 
     </div>
 
@@ -1441,12 +1497,12 @@ header p{
 
             <span>Model confidence</span>
 
-            <strong>94%</strong>
+            <strong id="confidenceValue">—</strong>
 
         </div>
 
         <div class="bar">
-            <span></span>
+            <span id="confidenceBar" style="width:0%"></span>
         </div>
 
     </div>
@@ -1561,113 +1617,8 @@ header p{
     </div>
 
 
-    <div class="indicators">
-
-           <div class="indicator" tabindex="0"
-               onclick="indicator('Psychological pressure detected', this)" onkeydown="if(event.key==='Enter'){indicator('Psychological pressure detected', this)}">
-
-            <div class="ind-icon">
-                ⚠
-            </div>
-
-            <div class="ind-text">
-
-                <strong>
-                    Urgency & Fear
-                </strong>
-
-                <small>
-                    Creates panic and immediate action.
-                </small>
-
-            </div>
-
-            <div class="severity">
-                HIGH
-            </div>
-
-        </div>
-        <div class="indicator-detail">Signal weight 0.92 • language model matched fear and urgency patterns.</div>
-
-
-           <div class="indicator" tabindex="0"
-               onclick="indicator('Credential harvesting detected', this)" onkeydown="if(event.key==='Enter'){indicator('Credential harvesting detected', this)}">
-
-            <div class="ind-icon">
-                🔑
-            </div>
-
-            <div class="ind-text">
-
-                <strong>
-                    Credential Harvesting
-                </strong>
-
-                <small>
-                    Requests password verification.
-                </small>
-
-            </div>
-
-            <div class="severity">
-                HIGH
-            </div>
-
-        </div>
-        <div class="indicator-detail">Signal weight 0.97 • password verification request aligns with credential theft.</div>
-
-
-           <div class="indicator" tabindex="0"
-               onclick="indicator('Suspicious infrastructure detected', this)" onkeydown="if(event.key==='Enter'){indicator('Suspicious infrastructure detected', this)}">
-
-            <div class="ind-icon">
-                🔗
-            </div>
-
-            <div class="ind-text">
-
-                <strong>
-                    Suspicious URL
-                </strong>
-
-                <small>
-                    Domain structure is suspicious.
-                </small>
-
-            </div>
-
-            <div class="severity">
-                HIGH
-            </div>
-
-        </div>
-        <div class="indicator-detail">Signal weight 0.89 • claimed brand and destination infrastructure do not match.</div>
-
-
-        <div class="indicator" tabindex="0" onclick="indicator('Artificial deadline detected', this)">
-
-            <div class="ind-icon">
-                ⏱
-            </div>
-
-            <div class="ind-text">
-
-                <strong>
-                    Artificial Deadline
-                </strong>
-
-                <small>
-                    Uses time pressure.
-                </small>
-
-            </div>
-
-            <div class="severity">
-                MED
-            </div>
-
-        </div>
-        <div class="indicator-detail">Signal weight 0.76 • artificial 24-hour deadline increases pressure to act.</div>
+    <div class="indicators" id="indicatorResults">
+        <div class="indicator-detail">Run an analysis to view rule-based indicators.</div>
 
     </div>
 
@@ -1693,12 +1644,11 @@ header p{
     </div>
 
 
-    <div class="url">
+    <div class="url" id="urlResults">
 
         <div class="url-box">
 
-            https://secure-bank.example-login.
-            verify.portal.example/confirm
+            No URL analyzed.
 
         </div>
 
@@ -1707,8 +1657,8 @@ header p{
 
             <span>Domain Reputation</span>
 
-            <strong class="bad">
-                Suspicious
+            <strong class="bad" id="urlReputation">
+                —
             </strong>
 
         </div>
@@ -1718,8 +1668,8 @@ header p{
 
             <span>HTTPS</span>
 
-            <strong class="good">
-                Present
+            <strong class="good" id="urlHttps">
+                —
             </strong>
 
         </div>
@@ -1729,8 +1679,8 @@ header p{
 
             <span>Brand Match</span>
 
-            <strong class="bad">
-                Failed
+            <strong class="bad" id="urlBrandMatch">
+                —
             </strong>
 
         </div>
@@ -1740,8 +1690,8 @@ header p{
 
             <span>Risk Score</span>
 
-            <strong class="bad">
-                91 / 100
+            <strong class="bad" id="urlRiskScore">
+                —
             </strong>
 
         </div>
@@ -1776,71 +1726,25 @@ header p{
 
     <div class="ai">
 
-        <div class="ai-message">
+        <div class="ai-message" id="explanationText">
 
             ✦
 
-            This email is highly likely to be
-            phishing because multiple independent
-            signals indicate possible credential theft.
+            Run an analysis to receive an evidence-based explanation.
 
         </div>
 
 
-        <div class="reason">
-
-            <b>01</b>
-
-            <div>
-
-                <strong>
-                    Psychological pressure
-                </strong>
-
-                <small>
-                    Creates fear through account suspension threats.
-                </small>
-
-            </div>
-
+        <div class="reason" id="xaiResults">
+            <small>Model-derived feature evidence will appear here.</small>
         </div>
 
-
-        <div class="reason">
-
-            <b>02</b>
-
-            <div>
-
-                <strong>
-                    Credential targeting
-                </strong>
-
-                <small>
-                    Requests password verification.
-                </small>
-
-            </div>
-
+        <div class="reason" id="knowledgeResults">
+            <small>Retrieved cybersecurity knowledge will appear here.</small>
         </div>
 
-
-        <div class="reason">
-
-            <b>03</b>
-
-            <div>
-
-                <strong>
-                    Suspicious infrastructure
-                </strong>
-
-                <small>
-                    URL does not clearly match the claimed organization.
-                </small>
-
-            </div>
-
+        <div class="reason" id="recommendationResult">
+            <small>Recommendation will appear here.</small>
         </div>
 
     </div>
@@ -1974,62 +1878,181 @@ function indicator(message, source){
 
 
 /* ===============================
-   AI ANALYSIS
+   FASTAPI ANALYSIS
 ================================ */
 
-function analyzeEmail(){
+const DEFAULT_API_URL = "http://127.0.0.1:8000";
+const REQUEST_TIMEOUT_MS = 10000;
 
-    const button =
-        document.getElementById("analyze");
+function apiBaseUrl(){
+    const configured = window.PHISHEXPLAIN_API_URL || window.localStorage.getItem("phishExplainApiUrl");
+    return (configured || DEFAULT_API_URL).replace(/\/$/, "");
+}
 
-    const score =
-        document.getElementById("score");
+async function backendRequest(path, options = {}){
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try{
+        const response = await fetch(apiBaseUrl() + path, {
+            ...options,
+            signal: controller.signal
+        });
+        if(!response.ok){
+            throw new Error(`Backend returned HTTP ${response.status}.`);
+        }
+        try{
+            return await response.json();
+        }catch(error){
+            throw new Error("Backend returned invalid JSON.");
+        }
+    }catch(error){
+        if(error.name === "AbortError"){
+            throw new Error("Backend request timed out.");
+        }
+        throw error.message ? error : new Error("Backend unavailable or blocked by the network policy.");
+    }finally{
+        window.clearTimeout(timeout);
+    }
+}
 
-    const state = document.getElementById("analysisState");
-    const confidence = document.querySelector(".confidence-top strong");
-    const ring = document.querySelector(".score-ring");
+function setBackendStatus(message, color){
+    const status = document.getElementById("backendStatus");
+    status.textContent = message;
+    status.style.color = color || "#718399";
+}
+
+async function checkBackend(){
+    try{
+        await backendRequest("/health");
+        setBackendStatus("Backend connected", "#4ade80");
+        return true;
+    }catch(error){
+        setBackendStatus(error.message || "Backend unavailable", "#f87171");
+        return false;
+    }
+}
+
+function addText(parent, tag, className, text){
+    const element = document.createElement(tag);
+    if(className){
+        element.className = className;
+    }
+    element.textContent = text;
+    parent.appendChild(element);
+    return element;
+}
+
+function renderIndicators(indicators){
+    const container = document.getElementById("indicatorResults");
+    container.replaceChildren();
+    if(!indicators.length){
+        addText(container, "div", "indicator-detail", "No rule-based indicators detected.");
+        return;
+    }
+    indicators.forEach((name, index) => {
+        const item = document.createElement("div");
+        item.className = "indicator";
+        item.tabIndex = 0;
+        addText(item, "div", "ind-icon", "•");
+        const text = addText(item, "div", "ind-text", "");
+        addText(text, "strong", "", name);
+        addText(text, "small", "", "Observable rule-based indicator.");
+        addText(item, "div", "severity", index < 3 ? "HIGH" : "MED");
+        container.appendChild(item);
+    });
+}
+
+function renderXai(features){
+    const container = document.getElementById("xaiResults");
+    container.replaceChildren();
+    addText(container, "b", "", "MODEL EVIDENCE");
+    if(!features.length){
+        addText(container, "small", "", "No model-derived feature evidence returned.");
+        return;
+    }
+    features.forEach((feature, index) => {
+        const detail = addText(container, "small", "", `${String(index + 1).padStart(2, "0")} ${feature.feature}: ${feature.direction || "contribution"} (${feature.impact})`);
+        detail.style.display = "block";
+    });
+}
+
+function renderKnowledge(knowledge){
+    const container = document.getElementById("knowledgeResults");
+    container.replaceChildren();
+    addText(container, "b", "", "RAG KNOWLEDGE");
+    const results = knowledge && Array.isArray(knowledge.results) ? knowledge.results : [];
+    if(!results.length){
+        addText(container, "small", "", "No retrieved cybersecurity knowledge is available.");
+        return;
+    }
+    results.slice(0, 3).forEach(item => {
+        const title = item.title || "Knowledge result";
+        const text = item.text || item.content || "";
+        addText(container, "small", "", `${title}: ${text.slice(0, 220)}`);
+    });
+}
+
+function renderResult(data){
+    const score = Math.max(0, Math.min(Number(data.risk_score) || 0, 100));
+    const severity = String(data.severity || "LOW").toUpperCase();
+    document.getElementById("score").textContent = String(score);
+    document.getElementById("riskLabel").textContent = `${severity} / ${data.label || "UNKNOWN"}`;
+    document.getElementById("confidenceValue").textContent = `${score}%`;
+    document.getElementById("confidenceBar").style.width = `${score}%`;
+    document.getElementById("analysisState").textContent = "ANALYSIS COMPLETE";
+    document.getElementById("analysisState").style.color = severity === "LOW" ? "#4ade80" : "#f87171";
+
+    renderIndicators(Array.isArray(data.indicators) ? data.indicators : []);
+    renderXai(Array.isArray(data.xai) ? data.xai : []);
+    renderKnowledge(data.knowledge);
+    document.getElementById("explanationText").textContent = data.explanation || "No explanation returned.";
+    document.getElementById("recommendationResult").replaceChildren();
+    addText(document.getElementById("recommendationResult"), "b", "", "RECOMMENDATION");
+    addText(document.getElementById("recommendationResult"), "small", "", data.recommendation || "Verify independently through official channels.");
+
+    const url = data.url_analysis || {};
+    document.querySelector("#urlResults .url-box").textContent = url.is_valid ? document.getElementById("dashboard-url").value.trim() : "No valid URL analyzed.";
+    document.getElementById("urlReputation").textContent = url.label || "—";
+    document.getElementById("urlHttps").textContent = (url.facts || []).some(fact => fact === "HTTPS is present.") ? "Present" : "Not detected";
+    document.getElementById("urlBrandMatch").textContent = "Not evaluated";
+    document.getElementById("urlRiskScore").textContent = `${url.risk_score ?? 0} / 100`;
+}
+
+async function analyzeEmail(){
+    const button = document.getElementById("analyze");
+    const text = document.getElementById("dashboard-text").value.trim();
+    const url = document.getElementById("dashboard-url").value.trim();
+    if(!text && !url){
+        setBackendStatus("Provide message text, a URL, or both.", "#fbbf24");
+        return;
+    }
 
     button.disabled = true;
-
-    button.innerHTML =
-        "⟳ AI is analyzing...";
-    state.textContent = "SCANNING SIGNALS...";
-    state.style.color = "#fbbf24";
-
-    let value = 0;
-
-    const timer = setInterval(() => {
-
-        value +=
-            Math.floor(Math.random()*9)+3;
-
-        if(value >= 87){
-
-            value = 87;
-
-            clearInterval(timer);
-
-            button.disabled = false;
-
-            button.innerHTML =
-                "↻ Analyze Again";
-
-            state.textContent = "ANALYSIS COMPLETE / HIGH RISK";
-            state.style.color = "#f87171";
-            confidence.textContent = "97%";
-            ring.style.filter = "drop-shadow(0 0 18px rgba(239,68,68,.32))";
-
-            showToast(
-                "Analysis complete • HIGH RISK detected"
-            );
-
-        }
-
-        score.textContent = value;
-
-    },90);
-
+    button.textContent = "⟳ Analyzing with FastAPI...";
+    document.getElementById("analysisState").textContent = "WAITING FOR BACKEND...";
+    document.getElementById("analysisState").style.color = "#fbbf24";
+    setBackendStatus("Sending analysis request...", "#fbbf24");
+    try{
+        const data = await backendRequest("/analyze", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({text, url})
+        });
+        renderResult(data);
+        setBackendStatus("Backend connected • analysis received", "#4ade80");
+        showToast("Analysis complete");
+    }catch(error){
+        document.getElementById("analysisState").textContent = "ANALYSIS FAILED";
+        document.getElementById("analysisState").style.color = "#f87171";
+        setBackendStatus(error.message || "Backend unavailable", "#f87171");
+        showToast(error.message || "Analysis failed");
+    }finally{
+        button.disabled = false;
+        button.textContent = "↻ Analyze Again";
+    }
 }
+
+checkBackend();
 
 let telemetryStep = 0;
 
