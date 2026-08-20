@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1092,11 +1093,1103 @@ header p{
     }
 }
 </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PhishExplain-AI | Threat Intelligence</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #050912;
+            --panel: #0b1220;
+            --panel2: #0e1728;
+            --border: rgba(148, 163, 184, .12);
+            --text: #eef5ff;
+            --muted: #7d8da4;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --red: #ef4444;
+            --orange: #f59e0b;
+            --green: #22c55e;
+            --purple: #8b5cf6;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Manrope, Segoe UI, Arial, sans-serif;
+            color: var(--text);
+
+            background:
+                linear-gradient(rgba(20,38,62,.18) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20,38,62,.18) 1px, transparent 1px),
+                radial-gradient(circle at 10% 0%, rgba(37,99,235,.16), transparent 28%),
+                radial-gradient(circle at 90% 15%, rgba(124,58,237,.12), transparent 25%),
+                var(--bg);
+
+            background-size: 42px 42px, 42px 42px, auto, auto, auto;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 245px;
+            padding: 22px 15px;
+            background: rgba(5,10,18,.88);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 0 8px 30px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg,#2563eb,#06b6d4);
+            box-shadow: 0 0 30px rgba(37,99,235,.3);
+            font-size: 20px;
+        }
+
+        .logo h2 {
+            font-size: 17px;
+            letter-spacing: -.4px;
+        }
+
+        .logo h2 span {
+            color: #60a5fa;
+        }
+
+        .logo small {
+            display: block;
+            margin-top: 3px;
+            color: #53657d;
+            font-size: 7px;
+            letter-spacing: 1.5px;
+        }
+
+        .menu-title {
+            padding: 12px 10px 7px;
+            color: #44556b;
+            font-size: 8px;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+        }
+
+        .nav {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 4px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #718399;
+            text-align: left;
+            cursor: pointer;
+            font-size: 12px;
+            transition: .2s;
+        }
+
+        .nav:hover {
+            background: rgba(59,130,246,.08);
+            color: #dbeafe;
+        }
+
+        .nav.active {
+            color: #60a5fa;
+            background: rgba(59,130,246,.12);
+            box-shadow: inset 2px 0 #3b82f6;
+        }
+
+        .nav span {
+            display: inline-block;
+            width: 25px;
+        }
+
+        .sidebar-status {
+            position: absolute;
+            left: 15px;
+            right: 15px;
+            bottom: 18px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #091321;
+        }
+
+        .online {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 9px;
+        }
+
+        .online-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 12px #22c55e;
+        }
+
+        .sidebar-status small {
+            display: block;
+            color: #52647b;
+            margin-top: 5px;
+            margin-left: 14px;
+            font-size: 7px;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            margin-left: 245px;
+            max-width: 1580px;
+            padding: 36px 42px 48px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .eyebrow {
+            color: #4f6682;
+            font-size: 8px;
+            letter-spacing: 1.6px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        header h1 {
+            font-size: 30px;
+            letter-spacing: -1.2px;
+        }
+
+        header p {
+            color: var(--muted);
+            margin-top: 6px;
+            font-size: 12px;
+        }
+
+        /* ================= SIGNAL ================= */
+
+        .signal-strip {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr auto;
+            align-items: center;
+            gap: 24px;
+            min-height: 82px;
+            margin: -5px 0 18px;
+            padding: 15px 18px;
+            border: 1px solid rgba(34,211,238,.15);
+            border-radius: 13px;
+            background: linear-gradient(105deg,rgba(8,31,49,.92),rgba(7,17,30,.82));
+        }
+
+        .signal-kicker {
+            display: block;
+            color: #33d4df;
+            font-family: "DM Mono", monospace;
+            font-size: 9px;
+            letter-spacing: 1.3px;
+        }
+
+        .signal-copy strong {
+            display: block;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .signal-copy small {
+            display: block;
+            margin-top: 3px;
+            color: #7187a0;
+            font-size: 10px;
+        }
+
+        .signal-visual {
+            position: relative;
+            height: 47px;
+            overflow: hidden;
+            border-left: 1px solid rgba(148,163,184,.11);
+            border-right: 1px solid rgba(148,163,184,.11);
+        }
+
+        .signal-node {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            border: 2px solid #67e8f9;
+            border-radius: 50%;
+            background: #071421;
+            box-shadow: 0 0 12px rgba(34,211,238,.7);
+        }
+
+        .signal-node:nth-child(1) {
+            left: 18%;
+            top: 12px;
+        }
+
+        .signal-node:nth-child(2) {
+            left: 47%;
+            top: 28px;
+            background: #ef4444;
+            border-color: #fca5a5;
+        }
+
+        .signal-node:nth-child(3) {
+            left: 78%;
+            top: 8px;
+        }
+
+        .signal-meta {
+            min-width: 150px;
+            padding-left: 4px;
+            text-align: right;
+        }
+
+        .signal-meta strong {
+            display: block;
+            color: #fca5a5;
+            font-size: 21px;
+        }
+
+        .signal-meta small {
+            color: #7187a0;
+            font-family: "DM Mono", monospace;
+            font-size: 9px;
+        }
+
+        .activity-pulse {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-right: 6px;
+            border-radius: 50%;
+            background: #22d3ee;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live {
+            padding: 7px 10px;
+            border-radius: 20px;
+            background: rgba(34,197,94,.06);
+            border: 1px solid rgba(34,197,94,.13);
+            color: #4ade80;
+            font-size: 8px;
+        }
+
+        .live i {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-right: 5px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px 5px 5px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: #0a1321;
+        }
+
+        .avatar {
+            width: 29px;
+            height: 29px;
+            display: grid;
+            place-items: center;
+            border-radius: 7px;
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .profile strong {
+            display: block;
+            font-size: 8px;
+        }
+
+        .profile small {
+            color: #52647b;
+            font-size: 7px;
+        }
+
+        /* ================= KPI ================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 13px;
+            margin-bottom: 16px;
+        }
+
+        .stat {
+            position: relative;
+            padding: 15px;
+            min-height: 125px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: linear-gradient(145deg,#0c1727,#070e19);
+            transition: .25s;
+        }
+
+        .stat:hover {
+            transform: translateY(-3px);
+            border-color: rgba(96,165,250,.25);
+        }
+
+        .stat-label {
+            color: #60728a;
+            font-size: 9px;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .stat-icon {
+            float: right;
+            width: 27px;
+            height: 27px;
+            display: grid;
+            place-items: center;
+            border-radius: 7px;
+            background: rgba(59,130,246,.08);
+        }
+
+        .stat-value {
+            display: block;
+            margin-top: 13px;
+            font-size: 29px;
+            font-weight: 800;
+        }
+
+        .stat-info {
+            margin-top: 4px;
+            color: #53667d;
+            font-size: 10px;
+        }
+
+        .up {
+            color: #4ade80;
+        }
+
+        .down {
+            color: #f87171;
+        }
+
+        /* ================= CARDS ================= */
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.35fr .65fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: linear-gradient(145deg,rgba(13,24,41,.96),rgba(5,12,22,.97));
+            overflow: hidden;
+            box-shadow: 0 18px 50px rgba(0,0,0,.15);
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 17px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-head h2 {
+            font-size: 14px;
+        }
+
+        .tag {
+            color: #50657e;
+            font-size: 9px;
+            letter-spacing: 1.4px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        /* ================= EMAIL INPUT ================= */
+
+        .email-input-area {
+            padding: 17px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .input-group label {
+            color: #60738a;
+            font-size: 8px;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(148,163,184,.14);
+            border-radius: 7px;
+            outline: none;
+            background: #07101d;
+            color: #dce8f5;
+            font-family: inherit;
+            font-size: 10px;
+            transition: .2s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            border-color: rgba(59,130,246,.65);
+            box-shadow: 0 0 0 2px rgba(59,130,246,.08);
+        }
+
+        .input-group textarea {
+            min-height: 145px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .small-btn {
+            padding: 8px 11px;
+            border: 1px solid rgba(59,130,246,.18);
+            border-radius: 6px;
+            background: rgba(59,130,246,.08);
+            color: #93c5fd;
+            cursor: pointer;
+            font-size: 9px;
+        }
+
+        .small-btn:hover {
+            background: rgba(59,130,246,.16);
+        }
+
+        .small-btn.clear {
+            color: #fca5a5;
+            border-color: rgba(239,68,68,.16);
+            background: rgba(239,68,68,.05);
+        }
+
+        /* ================= SCANNER PREVIEW ================= */
+
+        .scanner {
+            min-height: 410px;
+        }
+
+        .email-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 17px;
+        }
+
+        .sender {
+            width: 37px;
+            height: 37px;
+            display: grid;
+            place-items: center;
+            border-radius: 9px;
+            background: linear-gradient(135deg,#1d4ed8,#0891b2);
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .sender-info strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .sender-info small {
+            color: #53667d;
+            font-size: 9px;
+        }
+
+        .subject {
+            padding: 0 17px 14px;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .subject span {
+            padding: 4px 6px;
+            margin-right: 4px;
+            border-radius: 4px;
+            color: #f87171;
+            background: rgba(239,68,68,.09);
+            font-size: 7px;
+        }
+
+        .email-body {
+            padding: 0 17px;
+            color: #aab8c9;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .email-body p {
+            margin-bottom: 11px;
+        }
+
+        .email-content-preview {
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .demo {
+            padding: 8px;
+            border: 1px solid rgba(59,130,246,.08);
+            border-radius: 7px;
+            color: #586b82;
+            background: rgba(59,130,246,.03);
+            font-size: 9px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 12px 17px 16px;
+            border-top: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .chips button {
+            padding: 6px 8px;
+            border: 1px solid rgba(239,68,68,.15);
+            border-radius: 6px;
+            background: rgba(239,68,68,.04);
+            color: #aebdce;
+            font-size: 9px;
+            cursor: pointer;
+        }
+
+        /* ================= THREAT SCORE ================= */
+
+        .threat {
+            min-height: 410px;
+        }
+
+        .score-area {
+            display: flex;
+            justify-content: center;
+            padding: 22px 0 8px;
+        }
+
+        .score-ring {
+            width: 170px;
+            height: 170px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: conic-gradient(
+                #ef4444 0deg,
+                #f59e0b 110deg,
+                #ef4444 245deg,
+                #172235 245deg
+            );
+            box-shadow: 0 0 50px rgba(239,68,68,.12);
+        }
+
+        .score-inner {
+            width: 140px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: #07101d;
+        }
+
+        .score {
+            color: #f87171;
+            font-size: 42px;
+            font-weight: 900;
+        }
+
+        .score-inner small {
+            color: #596c83;
+            font-size: 9px;
+        }
+
+        .score-inner label {
+            margin-top: 7px;
+            color: #52647b;
+            font-size: 8px;
+            letter-spacing: 1.3px;
+        }
+
+        .risk {
+            text-align: center;
+            color: #f87171;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .risk span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-right: 5px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .analyze {
+            width: calc(100% - 34px);
+            margin: 18px 17px 13px;
+            padding: 11px;
+            border: 0;
+            border-radius: 8px;
+            color: #fff;
+            background: linear-gradient(135deg,#2563eb,#0891b2);
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37,130,235,.25);
+        }
+
+        .analyze:disabled {
+            opacity: .65;
+            cursor: wait;
+        }
+
+        .confidence {
+            padding: 0 17px;
+        }
+
+        .confidence-top {
+            display: flex;
+            justify-content: space-between;
+            color: #60738a;
+            font-size: 9px;
+        }
+
+        .confidence-top strong {
+            color: #d1dae5;
+        }
+
+        .bar {
+            height: 4px;
+            margin-top: 6px;
+            border-radius: 5px;
+            background: #172437;
+            overflow: hidden;
+        }
+
+        .bar span {
+            display: block;
+            width: 94%;
+            height: 100%;
+            background: linear-gradient(90deg,#2563eb,#06b6d4);
+        }
+
+        /* ================= ANALYTICS ================= */
+
+        .analytics {
+            display: grid;
+            grid-template-columns: 1.5fr .7fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chart {
+            height: 270px;
+            padding: 12px 16px 15px;
+        }
+
+        .donut {
+            height: 185px;
+            padding: 10px 30px;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px 12px;
+            padding: 0 18px 15px;
+        }
+
+        .legend div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #66798f;
+            font-size: 9px;
+        }
+
+        .legend i {
+            width: 7px;
+            height: 7px;
+            border-radius: 2px;
+        }
+
+        .legend b {
+            margin-left: auto;
+            color: #cbd5e1;
+        }
+
+        .red { background:#ef4444; }
+        .orange { background:#f59e0b; }
+        .blue { background:#3b82f6; }
+        .green { background:#22c55e; }
+
+        /* ================= BOTTOM ================= */
+
+        .bottom {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .indicators {
+            padding: 12px;
+        }
+
+        .indicator {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 9px;
+            margin-bottom: 5px;
+            border-radius: 7px;
+            background: #0b1625;
+            cursor: pointer;
+        }
+
+        .indicator.is-selected {
+            background: linear-gradient(
+                90deg,
+                rgba(239,68,68,.14),
+                rgba(239,68,68,.04)
+            );
+            box-shadow: inset 2px 0 #ef4444;
+        }
+
+        .indicator-detail {
+            display: none;
+            padding: 0 10px 10px 44px;
+            color: #8092a9;
+            font-family: "DM Mono", monospace;
+            font-size: 8px;
+            line-height: 1.65;
+        }
+
+        .indicator.is-selected + .indicator-detail {
+            display: block;
+        }
+
+        .ind-icon {
+            width: 27px;
+            height: 27px;
+            display: grid;
+            place-items: center;
+            border-radius: 7px;
+            background: rgba(239,68,68,.08);
+        }
+
+        .ind-text {
+            flex: 1;
+        }
+
+        .ind-text strong {
+            display: block;
+            font-size: 10px;
+        }
+
+        .ind-text small {
+            color: #586b82;
+            font-size: 9px;
+        }
+
+        .severity {
+            color: #f87171;
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        /* ================= AI ================= */
+
+        .ai {
+            padding: 15px;
+        }
+
+        .ai-message {
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(139,92,246,.06);
+            border: 1px solid rgba(139,92,246,.1);
+            color: #9eacc0;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .reason {
+            display: flex;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(148,163,184,.05);
+        }
+
+        .reason b {
+            color: #a78bfa;
+            font-size: 9px;
+        }
+
+        .reason strong {
+            display: block;
+            font-size: 10px;
+        }
+
+        .reason small {
+            color: #596c83;
+            font-size: 9px;
+        }
+
+        /* ================= URL ================= */
+
+        .url {
+            padding: 14px;
+        }
+
+        .url-box {
+            padding: 9px;
+            border-radius: 7px;
+            background: #050b13;
+            border: 1px solid var(--border);
+            color: #91a2b8;
+            font-family: monospace;
+            font-size: 9px;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        .url-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(148,163,184,.05);
+            font-size: 9px;
+        }
+
+        .url-row span {
+            color: #5e7188;
+        }
+
+        .bad {
+            color: #f87171;
+        }
+
+        .good {
+            color: #4ade80;
+        }
+
+        /* ================= TOAST ================= */
+
+        .toast {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            padding: 11px 15px;
+            border: 1px solid #263950;
+            border-radius: 8px;
+            background: #0d1929;
+            color: #dbe5f0;
+            font-size: 10px;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: .3s;
+            z-index: 999;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .analysis-state {
+            color: #6f849d;
+            font-family: "DM Mono", monospace;
+            font-size: 8px;
+            letter-spacing: .8px;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media(max-width:1100px) {
+
+            .stats {
+                grid-template-columns: repeat(2,1fr);
+            }
+
+            .grid,
+            .analytics {
+                grid-template-columns: 1fr;
+            }
+
+            .bottom {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media(max-width:800px) {
+
+            .sidebar {
+                width: 65px;
+            }
+
+            .logo h2,
+            .logo small,
+            .menu-title,
+            .nav {
+                font-size: 0;
+            }
+
+            .nav span {
+                font-size: 15px;
+            }
+
+            .sidebar-status {
+                display: none;
+            }
+
+            .main {
+                margin-left: 65px;
+                width: calc(100% - 65px);
+                padding: 20px 14px;
+            }
+
+            .signal-strip {
+                grid-template-columns: 1fr auto;
+            }
+
+            .signal-visual {
+                display: none;
+            }
+
+            .bottom {
+                grid-template-columns: 1fr;
+            }
+
+            .profile {
+                display: none;
+            }
+        }
+
+        @media(max-width:500px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 19px;
+            }
+
+            .signal-meta {
+                min-width: 96px;
+            }
+
+            .signal-meta strong {
+                font-size: 17px;
+            }
+
+            .live {
+                display: none;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-group.full {
+                grid-column: auto;
+            }
+        }
+
+    </style>
 </head>
+
 
 <body>
 
-<!-- SIDEBAR -->
+<!-- ================= SIDEBAR ================= -->
 
 <aside class="sidebar">
 
@@ -1107,55 +2200,75 @@ header p{
         </div>
 
         <div>
-            <h2>Phish<span>Explain-AI</span></h2>
-            <small>AI THREAT INTELLIGENCE</small>
+            <h2>
+                Phish<span>Explain-AI</span>
+            </h2>
+
+            <small>
+                AI THREAT INTELLIGENCE
+            </small>
         </div>
 
     </div>
 
-    <div class="menu-title">OVERVIEW</div>
+    <div class="menu-title">
+        OVERVIEW
+    </div>
 
-    <button class="nav active" onclick="navigate('Dashboard')">
-        <span>⌂</span> Dashboard
+    <button class="nav active" onclick="navigate('Dashboard', this)">
+        <span>⌂</span>
+        Dashboard
     </button>
 
-    <button class="nav" onclick="navigate('Email Scanner')">
-        <span>◉</span> Email Scanner
+    <button class="nav" onclick="navigate('Email Scanner', this)">
+        <span>◉</span>
+        Email Scanner
     </button>
 
-    <button class="nav" onclick="navigate('Analytics')">
-        <span>▥</span> Threat Analytics
+    <button class="nav" onclick="navigate('Analytics', this)">
+        <span>▥</span>
+        Threat Analytics
     </button>
 
-    <div class="menu-title">INTELLIGENCE</div>
+    <div class="menu-title">
+        INTELLIGENCE
+    </div>
 
-    <button class="nav" onclick="navigate('URL Intelligence')">
-        <span>↗</span> URL Intelligence
+    <button class="nav" onclick="navigate('URL Intelligence', this)">
+        <span>↗</span>
+        URL Intelligence
     </button>
 
-    <button class="nav" onclick="navigate('AI Insights')">
-        <span>✦</span> AI Insights
+    <button class="nav" onclick="navigate('AI Insights', this)">
+        <span>✦</span>
+        AI Insights
     </button>
 
-    <button class="nav" onclick="navigate('Scan History')">
-        <span>◷</span> Scan History
+    <button class="nav" onclick="navigate('Scan History', this)">
+        <span>◷</span>
+        Scan History
     </button>
 
     <div class="sidebar-status">
 
         <div class="online">
+
             <i class="online-dot"></i>
+
             AI Engine Online
+
         </div>
 
-        <small>Model v2.4.1 • Operational</small>
+        <small>
+            Model v2.4.1 • Operational
+        </small>
 
     </div>
 
 </aside>
 
 
-<!-- MAIN -->
+<!-- ================= MAIN ================= -->
 
 <main class="main">
 
@@ -1167,7 +2280,9 @@ header p{
             PHISHEXPLAIN / AI THREAT INTELLIGENCE
         </div>
 
-        <h1>PhishExplain-AI</h1>
+        <h1>
+            PhishExplain-AI
+        </h1>
 
         <p>
             Understand, detect and explain phishing threats with AI.
@@ -1189,8 +2304,15 @@ header p{
             </div>
 
             <div>
-                <strong>Security Analyst</strong>
-                <small>Administrator</small>
+
+                <strong>
+                    Security Analyst
+                </strong>
+
+                <small>
+                    Administrator
+                </small>
+
             </div>
 
         </div>
@@ -1200,39 +2322,63 @@ header p{
 </header>
 
 
-<section class="signal-strip" aria-label="Live threat telemetry" tabindex="0" onclick="cycleTelemetry()" onkeydown="if(event.key==='Enter'||event.key===' '){cycleTelemetry()}" title="Open live telemetry">
+<!-- ================= TELEMETRY ================= -->
+
+<section class="signal-strip">
 
     <div class="signal-copy">
-        <span class="signal-kicker" id="telemetryKicker"><span class="activity-pulse"></span>LIVE TELEMETRY / 08:42:19 UTC</span>
-        <strong id="telemetryTitle">Threat activity elevated</strong>
-        <small id="telemetryCopy">Credential phishing signals are trending above baseline.</small>
+
+        <span class="signal-kicker">
+            <span class="activity-pulse"></span>
+            LIVE TELEMETRY / 08:42:19 UTC
+        </span>
+
+        <strong id="telemetryTitle">
+            Threat activity elevated
+        </strong>
+
+        <small id="telemetryCopy">
+            Credential phishing signals are trending above baseline.
+        </small>
+
     </div>
 
-    <div class="signal-visual" aria-hidden="true">
+    <div class="signal-visual">
+
         <span class="signal-node"></span>
         <span class="signal-node"></span>
         <span class="signal-node"></span>
+
     </div>
 
     <div class="signal-meta">
-        <strong id="telemetryDelta">+18.6%</strong>
-        <small id="telemetryMeta">VS. 7-DAY BASELINE</small>
+
+        <strong id="telemetryDelta">
+            +18.6%
+        </strong>
+
+        <small id="telemetryMeta">
+            VS. 7-DAY BASELINE
+        </small>
+
     </div>
 
 </section>
 
 
-<!-- STATISTICS -->
+<!-- ================= STATISTICS ================= -->
 
 <section class="stats">
 
-    <div class="stat is-live">
+    <div class="stat">
 
         <div class="stat-label">
             EMAILS ANALYZED
         </div>
 
-        <div class="stat-icon">✉</div>
+        <div class="stat-icon">
+            ✉
+        </div>
 
         <strong class="stat-value counter" data-target="1284">
             0
@@ -1252,7 +2398,9 @@ header p{
             THREATS DETECTED
         </div>
 
-        <div class="stat-icon">⚠</div>
+        <div class="stat-icon">
+            ⚠
+        </div>
 
         <strong class="stat-value counter" data-target="143">
             0
@@ -1272,7 +2420,9 @@ header p{
             DETECTION ACCURACY
         </div>
 
-        <div class="stat-icon">✓</div>
+        <div class="stat-icon">
+            ✓
+        </div>
 
         <strong class="stat-value">
             96.8%
@@ -1292,7 +2442,9 @@ header p{
             AVG ANALYSIS TIME
         </div>
 
-        <div class="stat-icon">ϟ</div>
+        <div class="stat-icon">
+            ϟ
+        </div>
 
         <strong class="stat-value">
             1.2s
@@ -1308,52 +2460,160 @@ header p{
 </section>
 
 
-<!-- EMAIL + THREAT -->
+<!-- ========================================================= -->
+<!-- EMAIL SCANNER + THREAT SCORE -->
+<!-- ========================================================= -->
 
 <section class="grid">
 
+
+<!-- ================= EMAIL SCANNER ================= -->
 
 <div class="card scanner">
 
     <div class="card-head">
 
         <div>
-            <div class="tag">ANALYSIS TARGET</div>
-            <h2>Suspicious Email</h2>
+
+            <div class="tag">
+                ANALYSIS TARGET
+            </div>
+
+            <h2>
+                Email Scanner
+            </h2>
+
         </div>
 
-        <div class="analysis-state" id="analysisState">READY TO SCAN</div>
+        <div class="analysis-state" id="analysisState">
+            READY TO SCAN
+        </div>
 
     </div>
 
 
-    <div class="dashboard-inputs">
+    <!-- ================= USER INPUT ================= -->
 
-        <label for="dashboard-text">Message or email text</label>
-        <textarea id="dashboard-text" placeholder="Paste suspicious email or message text"></textarea>
+    <div class="email-input-area">
 
-        <label for="dashboard-url">Optional URL</label>
-        <input id="dashboard-url" type="url" placeholder="https://example.com/login" />
+        <div class="input-grid">
 
-        <div class="backend-status" id="backendStatus" aria-live="polite">Checking backend connection...</div>
+            <div class="input-group">
+
+                <label>
+                    FROM EMAIL
+                </label>
+
+                <input
+                    id="senderInput"
+                    type="email"
+                    placeholder="sender@example.com"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    TO EMAIL
+                </label>
+
+                <input
+                    id="recipientInput"
+                    type="email"
+                    placeholder="you@example.com"
+                >
+
+            </div>
+
+
+            <div class="input-group full">
+
+                <label>
+                    SUBJECT
+                </label>
+
+                <input
+                    id="subjectInput"
+                    type="text"
+                    placeholder="Enter email subject"
+                >
+
+            </div>
+
+
+            <div class="input-group full">
+
+                <label>
+                    EMAIL CONTENT
+                </label>
+
+                <textarea
+                    id="emailInput"
+                    placeholder="Paste or type the complete email content here..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="input-group full">
+
+                <label>
+                    URL (OPTIONAL)
+                </label>
+
+                <input
+                    id="urlInput"
+                    type="text"
+                    placeholder="https://example.com/login"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="input-actions">
+
+            <button
+                class="small-btn"
+                onclick="loadExampleEmail()"
+            >
+                Load Example Email
+            </button>
+
+            <button
+                class="small-btn clear"
+                onclick="clearEmail()"
+            >
+                Clear
+            </button>
+
+        </div>
 
     </div>
 
+
+    <!-- ================= EMAIL PREVIEW ================= -->
 
     <div class="email-header">
 
-        <div class="sender">
+        <div
+            class="sender"
+            id="senderAvatar"
+        >
             SB
         </div>
 
         <div class="sender-info">
 
-            <strong>
-                security@secure-bank.example
+            <strong id="senderDisplay">
+                security@example.com
             </strong>
 
-            <small>
-                To: user@example.com • Today, 10:42 AM
+            <small id="recipientDisplay">
+                To: user@example.com
             </small>
 
         </div>
@@ -1363,50 +2623,30 @@ header p{
 
     <div class="subject">
 
-        <span>URGENT</span>
+        <span>
+            EMAIL
+        </span>
 
-        Account Verification Required
+        <span id="subjectDisplay">
+            No subject entered
+        </span>
 
     </div>
 
 
     <div class="email-body">
 
-        <p>
-            We detected an authentication event
-            associated with your account.
-        </p>
+        <div
+            class="email-content-preview"
+            id="emailPreview"
+        >
+            Enter an email above to preview it here.
+        </div>
 
-        <p>
-
-            <span class="highlight" tabindex="0" onclick="indicator('Account suspension language')" onkeydown="if(event.key==='Enter'){indicator('Account suspension language')}" title="Inspect language signal">
-                Your account will be suspended today
-            </span>
-
-            unless you complete a required verification step.
-
-        </p>
-
-        <p>
-            Please verify your password immediately
-            using the secure portal below:
-        </p>
-
-        <a href="#" class="verify"
-           onclick="return false;">
-            🔐 VERIFY ACCOUNT
-        </a>
-
-        <p>
-            Failure to act within 24 hours may
-            result in account restrictions.
-        </p>
+        <br>
 
         <div class="demo">
-
-            ⓘ Fictional demonstration message
-            for PhishExplain AI testing.
-
+            ⓘ The email is analyzed locally through your configured AI backend.
         </div>
 
     </div>
@@ -1435,15 +2675,22 @@ header p{
 </div>
 
 
-<!-- THREAT SCORE -->
+<!-- ================= THREAT SCORE ================= -->
 
 <div class="card threat">
 
     <div class="card-head">
 
         <div>
-            <div class="tag">AI CLASSIFICATION</div>
-            <h2>Threat Assessment</h2>
+
+            <div class="tag">
+                AI CLASSIFICATION
+            </div>
+
+            <h2>
+                Threat Assessment
+            </h2>
+
         </div>
 
         <div class="tag">
@@ -1459,13 +2706,20 @@ header p{
 
             <div class="score-inner">
 
-                <div class="score" id="score">
+                <div
+                    class="score"
+                    id="score"
+                >
                     0
                 </div>
 
-                <small>/100</small>
+                <small>
+                    /100
+                </small>
 
-                <label>THREAT SCORE</label>
+                <label>
+                    THREAT SCORE
+                </label>
 
             </div>
 
@@ -1474,20 +2728,23 @@ header p{
     </div>
 
 
-    <div class="risk">
+    <div
+        class="risk"
+        id="riskStatus"
+    >
 
         <span></span>
-        <span id="riskLabel">READY TO ANALYZE</span>
+        READY
 
     </div>
 
 
-    <button class="analyze"
-            id="analyze"
-            onclick="analyzeEmail()">
-
+    <button
+        class="analyze"
+        id="analyze"
+        onclick="analyzeEmail()"
+    >
         ✦ Analyze Email With AI
-
     </button>
 
 
@@ -1495,14 +2752,21 @@ header p{
 
         <div class="confidence-top">
 
-            <span>Model confidence</span>
+            <span>
+                Model confidence
+            </span>
 
-            <strong id="confidenceValue">—</strong>
+            <strong>
+                0%
+            </strong>
 
         </div>
 
         <div class="bar">
-            <span id="confidenceBar" style="width:0%"></span>
+            <span
+                id="confidenceBar"
+                style="width:0%"
+            ></span>
         </div>
 
     </div>
@@ -1512,7 +2776,7 @@ header p{
 </section>
 
 
-<!-- ANALYTICS -->
+<!-- ================= ANALYTICS ================= -->
 
 <section class="analytics">
 
@@ -1523,9 +2787,13 @@ header p{
 
         <div>
 
-            <div class="tag">DATA ANALYTICS</div>
+            <div class="tag">
+                DATA ANALYTICS
+            </div>
 
-            <h2>Threat Detection Trend</h2>
+            <h2>
+                Threat Detection Trend
+            </h2>
 
         </div>
 
@@ -1548,9 +2816,13 @@ header p{
 
         <div>
 
-            <div class="tag">CLASSIFICATION</div>
+            <div class="tag">
+                CLASSIFICATION
+            </div>
 
-            <h2>Threat Distribution</h2>
+            <h2>
+                Threat Distribution
+            </h2>
 
         </div>
 
@@ -1593,12 +2865,12 @@ header p{
 </section>
 
 
-<!-- BOTTOM -->
+<!-- ================= BOTTOM ================= -->
 
 <section class="bottom">
 
 
-<!-- INDICATORS -->
+<!-- ================= INDICATORS ================= -->
 
 <div class="card">
 
@@ -1610,22 +2882,49 @@ header p{
                 EXPLAINABLE AI
             </div>
 
-            <h2>Threat Indicators</h2>
+            <h2>
+                Threat Indicators
+            </h2>
 
         </div>
 
     </div>
 
+    <div
+        class="indicators"
+        id="indicatorsContainer"
+    >
 
-    <div class="indicators" id="indicatorResults">
-        <div class="indicator-detail">Run an analysis to view rule-based indicators.</div>
+        <div class="indicator">
+
+            <div class="ind-icon">
+                ⓘ
+            </div>
+
+            <div class="ind-text">
+
+                <strong>
+                    No analysis yet
+                </strong>
+
+                <small>
+                    Enter an email and run AI analysis.
+                </small>
+
+            </div>
+
+            <div class="severity">
+                WAITING
+            </div>
+
+        </div>
 
     </div>
 
 </div>
 
 
-<!-- URL INTELLIGENCE -->
+<!-- ================= URL INTELLIGENCE ================= -->
 
 <div class="card">
 
@@ -1637,7 +2936,9 @@ header p{
                 THREAT INTELLIGENCE
             </div>
 
-            <h2>URL Intelligence</h2>
+            <h2>
+                URL Intelligence
+            </h2>
 
         </div>
 
@@ -1646,18 +2947,40 @@ header p{
 
     <div class="url" id="urlResults">
 
-        <div class="url-box">
+        <div
+            class="url-box"
+            id="urlDisplay"
+        >
+            No URL provided
+        </div>
 
-            No URL analyzed.
+
+        <div class="url-row">
+
+            <span>
+                Domain Reputation
+            </span>
+
+            <strong
+                class="bad"
+                id="domainReputation"
+            >
+                Not analyzed
+            </strong>
 
         </div>
 
 
         <div class="url-row">
 
-            <span>Domain Reputation</span>
+            <span>
+                HTTPS
+            </span>
 
-            <strong class="bad" id="urlReputation">
+            <strong
+                class="good"
+                id="httpsStatus"
+            >
                 —
             </strong>
 
@@ -1666,9 +2989,14 @@ header p{
 
         <div class="url-row">
 
-            <span>HTTPS</span>
+            <span>
+                Brand Match
+            </span>
 
-            <strong class="good" id="urlHttps">
+            <strong
+                class="bad"
+                id="brandMatch"
+            >
                 —
             </strong>
 
@@ -1677,20 +3005,14 @@ header p{
 
         <div class="url-row">
 
-            <span>Brand Match</span>
+            <span>
+                Risk Score
+            </span>
 
-            <strong class="bad" id="urlBrandMatch">
-                —
-            </strong>
-
-        </div>
-
-
-        <div class="url-row">
-
-            <span>Risk Score</span>
-
-            <strong class="bad" id="urlRiskScore">
+            <strong
+                class="bad"
+                id="urlRiskScore"
+            >
                 —
             </strong>
 
@@ -1701,7 +3023,7 @@ header p{
 </div>
 
 
-<!-- AI EXPLANATION -->
+<!-- ================= AI EXPLANATION ================= -->
 
 <div class="card">
 
@@ -1713,7 +3035,9 @@ header p{
                 AI COPILOT
             </div>
 
-            <h2>Why is this phishing?</h2>
+            <h2>
+                Why is this phishing?
+            </h2>
 
         </div>
 
@@ -1726,25 +3050,69 @@ header p{
 
     <div class="ai">
 
-        <div class="ai-message" id="explanationText">
+        <div
+            class="ai-message"
+            id="aiExplanation"
+        >
+            Enter an email and click
+            "Analyze Email With AI" to receive
+            an explanation from the AI engine.
+        </div>
 
-            ✦
 
-            Run an analysis to receive an evidence-based explanation.
+        <div class="reason">
+
+            <b>01</b>
+
+            <div>
+
+                <strong>
+                    Psychological pressure
+                </strong>
+
+                <small>
+                    Detected from email language.
+                </small>
+
+            </div>
 
         </div>
 
 
-        <div class="reason" id="xaiResults">
-            <small>Model-derived feature evidence will appear here.</small>
+        <div class="reason">
+
+            <b>02</b>
+
+            <div>
+
+                <strong>
+                    Credential targeting
+                </strong>
+
+                <small>
+                    Possible credential request.
+                </small>
+
+            </div>
+
         </div>
 
-        <div class="reason" id="knowledgeResults">
-            <small>Retrieved cybersecurity knowledge will appear here.</small>
-        </div>
 
-        <div class="reason" id="recommendationResult">
-            <small>Recommendation will appear here.</small>
+        <div class="reason">
+
+            <b>03</b>
+
+            <div>
+
+                <strong>
+                    Suspicious infrastructure
+                </strong>
+
+                <small>
+                    URL analysis will appear here.
+                </small>
+
+            </div>
         </div>
 
     </div>
@@ -1756,22 +3124,23 @@ header p{
 </main>
 
 
-<div class="toast" id="toast">
+<div
+    class="toast"
+    id="toast"
+>
     Notification
 </div>
 
 
 <script>
 
-/* ===============================
+/* ============================================================
    COUNTERS
-================================ */
+============================================================ */
 
-document.querySelectorAll(".counter")
-.forEach(counter => {
+document.querySelectorAll(".counter").forEach(counter => {
 
-    const target =
-        Number(counter.dataset.target);
+    const target = Number(counter.dataset.target);
 
     let value = 0;
 
@@ -1779,7 +3148,7 @@ document.querySelectorAll(".counter")
 
         value += target / 45;
 
-        if(value >= target){
+        if (value >= target) {
 
             value = target;
 
@@ -1790,16 +3159,16 @@ document.querySelectorAll(".counter")
         counter.textContent =
             Math.floor(value).toLocaleString();
 
-    },25);
+    }, 25);
 
 });
 
 
-/* ===============================
+/* ============================================================
    TOAST
-================================ */
+============================================================ */
 
-function showToast(message){
+function showToast(message) {
 
     const toast =
         document.getElementById("toast");
@@ -1812,68 +3181,315 @@ function showToast(message){
 
         toast.classList.remove("show");
 
-    },2300);
-
+    }, 2300);
 }
 
 
-/* ===============================
-   NAVIGATION
-================================ */
+/* ============================================================
+   EMAIL INPUT -> PREVIEW
+============================================================ */
 
-function navigate(section, trigger){
+const senderInput =
+    document.getElementById("senderInput");
 
-    document.querySelectorAll(".nav")
-    .forEach(item =>
-        item.classList.remove("active")
+const recipientInput =
+    document.getElementById("recipientInput");
+
+const subjectInput =
+    document.getElementById("subjectInput");
+
+const emailInput =
+    document.getElementById("emailInput");
+
+const urlInput =
+    document.getElementById("urlInput");
+
+
+function updateEmailPreview() {
+
+    const sender =
+        senderInput.value.trim();
+
+    const recipient =
+        recipientInput.value.trim();
+
+    const subject =
+        subjectInput.value.trim();
+
+    const body =
+        emailInput.value.trim();
+
+
+    document.getElementById("senderDisplay").textContent =
+        sender || "sender@example.com";
+
+
+    document.getElementById("recipientDisplay").textContent =
+        "To: " + (recipient || "user@example.com");
+
+
+    document.getElementById("subjectDisplay").textContent =
+        subject || "No subject entered";
+
+
+    const preview =
+        document.getElementById("emailPreview");
+
+
+    if (body) {
+
+        preview.textContent = body;
+
+    } else {
+
+        preview.textContent =
+            "Enter an email above to preview it here.";
+
+    }
+
+
+    /* Generate sender initials */
+
+    if (sender) {
+
+        const name =
+            sender.split("@")[0];
+
+        const initials =
+            name
+                .split(/[._-]/)
+                .map(part => part.charAt(0))
+                .join("")
+                .substring(0,2)
+                .toUpperCase();
+
+        document.getElementById("senderAvatar").textContent =
+            initials || "EM";
+
+    } else {
+
+        document.getElementById("senderAvatar").textContent =
+            "EM";
+
+    }
+
+
+    /* Update URL preview */
+
+    const url =
+        urlInput.value.trim();
+
+    document.getElementById("urlDisplay").textContent =
+        url || "No URL provided";
+}
+
+
+/* Update preview whenever user types */
+
+[
+    senderInput,
+    recipientInput,
+    subjectInput,
+    emailInput,
+    urlInput
+].forEach(input => {
+
+    input.addEventListener(
+        "input",
+        updateEmailPreview
     );
 
-    (trigger || event.currentTarget)
-        .classList.add("active");
+});
 
-    const destinations = {
-        "Dashboard":"Overview is live",
-        "Email Scanner":"Email evidence selected",
-        "Analytics":"Threat trend workspace selected",
-        "URL Intelligence":"URL evidence selected",
-        "AI Insights":"Explainable signals selected",
-        "Scan History":"Scan history selected"
-    };
 
-    const targetMap = {
-        "Email Scanner":".scanner",
-        "Analytics":".analytics",
-        "URL Intelligence":".url",
-        "AI Insights":".ai",
-        "Dashboard":".signal-strip"
-    };
+/* ============================================================
+   EXAMPLE EMAIL
+============================================================ */
 
-    const target = document.querySelector(targetMap[section]);
-    if(target){
-        const focusTarget = target.closest(".card, .signal-strip");
-        focusTarget.scrollIntoView({behavior:"smooth", block:"center"});
-        focusTarget.classList.add("focus-target");
-        setTimeout(() => focusTarget.classList.remove("focus-target"), 900);
-    }
+function loadExampleEmail() {
 
-    showToast(destinations[section] || section + " selected");
+    senderInput.value =
+        "security@secure-bank.example";
 
+    recipientInput.value =
+        "user@example.com";
+
+    subjectInput.value =
+        "Account Verification Required";
+
+    emailInput.value =
+`We detected an authentication event associated with your account.
+
+Your account will be suspended today unless you complete a required verification step.
+
+Please verify your password immediately using the secure portal below.
+
+Failure to act within 24 hours may result in account restrictions.`;
+
+    urlInput.value =
+        "https://secure-bank.example-login.verify.portal.example/confirm";
+
+
+    updateEmailPreview();
+
+    showToast(
+        "Example phishing email loaded"
+    );
 }
 
 
-/* ===============================
-   INDICATORS
-================================ */
+/* ============================================================
+   CLEAR EMAIL
+============================================================ */
 
-function indicator(message, source){
+function clearEmail() {
 
-    if(source){
-        document.querySelectorAll(".indicator").forEach(item => item.classList.remove("is-selected"));
-        source.classList.add("is-selected");
+    senderInput.value = "";
+
+    recipientInput.value = "";
+
+    subjectInput.value = "";
+
+    emailInput.value = "";
+
+    urlInput.value = "";
+
+    updateEmailPreview();
+
+
+    document.getElementById("score").textContent =
+        "0";
+
+    document.querySelector(
+        ".confidence-top strong"
+    ).textContent = "0%";
+
+    document.getElementById(
+        "confidenceBar"
+    ).style.width = "0%";
+
+
+    document.getElementById(
+        "analysisState"
+    ).textContent = "READY TO SCAN";
+
+
+    document.getElementById(
+        "riskStatus"
+    ).innerHTML = "<span></span> READY";
+
+
+    document.getElementById(
+        "aiExplanation"
+    ).textContent =
+        "Enter an email and click Analyze Email With AI to receive an explanation from the AI engine.";
+
+
+    showToast("Email cleared");
+}
+
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+function navigate(section, trigger) {
+
+    document.querySelectorAll(".nav")
+        .forEach(item =>
+            item.classList.remove("active")
+        );
+
+    if (trigger) {
+        trigger.classList.add("active");
     }
 
-    showToast("AI Insight: " + message);
+    const destinations = {
 
+        "Dashboard":
+            "Overview is live",
+
+        "Email Scanner":
+            "Email scanner selected",
+
+        "Analytics":
+            "Threat trend workspace selected",
+
+        "URL Intelligence":
+            "URL evidence selected",
+
+        "AI Insights":
+            "Explainable signals selected",
+
+        "Scan History":
+            "Scan history selected"
+    };
+
+
+    const targetMap = {
+
+        "Email Scanner": ".scanner",
+
+        "Analytics": ".analytics",
+
+        "URL Intelligence": ".url",
+
+        "AI Insights": ".ai",
+
+        "Dashboard": ".signal-strip"
+
+    };
+
+
+    const target =
+        document.querySelector(targetMap[section]);
+
+
+    if (target) {
+
+        const focusTarget =
+            target.closest(".card, .signal-strip");
+
+        if (focusTarget) {
+
+            focusTarget.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+        }
+
+    }
+
+
+    showToast(
+        destinations[section] ||
+        section + " selected"
+    );
+}
+
+
+/* ============================================================
+   INDICATORS
+============================================================ */
+
+function indicator(message, source) {
+
+    if (source) {
+
+        document
+            .querySelectorAll(".indicator")
+            .forEach(item =>
+                item.classList.remove("is-selected")
+            );
+
+        source.classList.add("is-selected");
+
+    }
+
+    showToast(
+        "AI Insight: " + message
+    );
 }
 
 
@@ -1883,6 +3499,11 @@ function indicator(message, source){
 
 const DEFAULT_API_URL = "http://127.0.0.1:8000";
 const REQUEST_TIMEOUT_MS = 10000;
+/* ============================================================
+   MAIN AI EMAIL ANALYSIS
+============================================================ */
+
+async function analyzeEmail() {
 
 function apiBaseUrl(){
     const configured = window.PHISHEXPLAIN_API_URL || window.localStorage.getItem("phishExplainApiUrl");
@@ -1915,6 +3536,7 @@ async function backendRequest(path, options = {}){
     }
 }
 
+/*
 function setBackendStatus(message, color){
     const status = document.getElementById("backendStatus");
     status.textContent = message;
@@ -2053,40 +3675,651 @@ async function analyzeEmail(){
 }
 
 checkBackend();
+*/
+    const state =
+        document.getElementById("analysisState");
 
-let telemetryStep = 0;
+    const confidence =
+        document.querySelector(
+            ".confidence-top strong"
+        );
 
-function cycleTelemetry(){
-    const states = [
-        ["Threat activity elevated", "Credential phishing signals are trending above baseline.", "+18.6%", "VS. 7-DAY BASELINE"],
-        ["Credential lures detected", "Seven campaigns share the same account verification pattern.", "07", "ACTIVE CAMPAIGNS"],
-        ["Containment window stable", "No new malware indicators observed in the last 15 minutes.", "04:12", "UNTIL NEXT SWEEP"]
-    ];
-    telemetryStep = (telemetryStep + 1) % states.length;
-    const state = states[telemetryStep];
-    document.getElementById("telemetryTitle").textContent = state[0];
-    document.getElementById("telemetryCopy").textContent = state[1];
-    document.getElementById("telemetryDelta").textContent = state[2];
-    document.getElementById("telemetryMeta").textContent = state[3];
-    showToast("Telemetry channel updated");
+    const confidenceBar =
+        document.getElementById(
+            "confidenceBar"
+        );
+
+    const ring =
+        document.querySelector(
+            ".score-ring"
+        );
+
+    const riskElement =
+        document.getElementById(
+            "riskStatus"
+        );
+
+
+    /* Get user input */
+
+    const sender =
+        senderInput.value.trim();
+
+    const recipient =
+        recipientInput.value.trim();
+
+    const subject =
+        subjectInput.value.trim();
+
+    const emailText =
+        emailInput.value.trim();
+
+    const url =
+        urlInput.value.trim();
+
+
+    /* Validate */
+
+    if (!emailText) {
+
+        showToast(
+            "Please enter or paste an email message first."
+        );
+
+        emailInput.focus();
+
+        return;
+    }
+
+
+    /* Disable button */
+
+    button.disabled = true;
+
+    button.innerHTML =
+        "⟳ AI is analyzing...";
+
+
+    state.textContent =
+        "SCANNING SIGNALS...";
+
+    state.style.color =
+        "#fbbf24";
+
+
+    try {
+
+        /*
+         * Combine the email metadata and body.
+         * This complete text is sent to the backend.
+         */
+
+        const completeEmail =
+
+`From: ${sender || "Unknown"}
+To: ${recipient || "Unknown"}
+Subject: ${subject || "No subject"}
+
+${emailText}`;
+
+
+        /* ==========================================
+           SEND TO FASTAPI
+        ========================================== */
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/analyze",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        text: completeEmail,
+
+                        url: url
+
+                    })
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Backend request failed: " +
+                response.status
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "AI BACKEND RESPONSE:",
+            data
+        );
+
+
+        /* ==========================================
+           GET SCORE
+        ========================================== */
+
+        const riskScore =
+            Number(
+                data.risk_score ?? 0
+            );
+
+
+        /* ==========================================
+           THREAT SCORE
+        ========================================== */
+
+        score.textContent =
+            Math.round(riskScore);
+
+
+        /* ==========================================
+           CONFIDENCE
+        ========================================== */
+
+        const modelConfidence =
+            data.confidence !== undefined
+                ? Number(data.confidence)
+                : riskScore;
+
+
+        if (confidence) {
+
+            confidence.textContent =
+                Math.round(modelConfidence) +
+                "%";
+
+        }
+
+
+        if (confidenceBar) {
+
+            confidenceBar.style.width =
+                Math.min(
+                    Math.max(
+                        modelConfidence,
+                        0
+                    ),
+                    100
+                ) + "%";
+
+        }
+
+
+        /* ==========================================
+           RISK STATUS
+        ========================================== */
+
+        const severity =
+            String(
+                data.severity ||
+                "UNKNOWN"
+            ).toUpperCase();
+
+
+        const label =
+            String(
+                data.label ||
+                severity
+            ).toUpperCase();
+
+
+        state.textContent =
+            `ANALYSIS COMPLETE / ${severity} RISK`;
+
+
+        if (riskScore >= 60) {
+
+            state.style.color =
+                "#f87171";
+
+        } else if (riskScore >= 31) {
+
+            state.style.color =
+                "#fbbf24";
+
+        } else {
+
+            state.style.color =
+                "#4ade80";
+        }
+
+
+        /* ==========================================
+           SCORE RING
+        ========================================== */
+
+        if (ring) {
+
+            if (riskScore >= 60) {
+
+                ring.style.filter =
+                    "drop-shadow(0 0 18px rgba(239,68,68,.32))";
+
+            } else if (riskScore >= 31) {
+
+                ring.style.filter =
+                    "drop-shadow(0 0 18px rgba(251,191,36,.32))";
+
+            } else {
+
+                ring.style.filter =
+                    "drop-shadow(0 0 18px rgba(34,197,94,.32))";
+
+            }
+
+        }
+
+
+        /* ==========================================
+           RISK LABEL
+        ========================================== */
+
+        if (riskElement) {
+
+            let riskColor =
+                "#4ade80";
+
+            if (riskScore >= 60) {
+
+                riskColor =
+                    "#f87171";
+
+            } else if (riskScore >= 31) {
+
+                riskColor =
+                    "#fbbf24";
+
+            }
+
+
+            riskElement.innerHTML = `
+
+                <span
+                    style="
+                        background:${riskColor};
+                        box-shadow:0 0 10px ${riskColor};
+                    "
+                ></span>
+
+                ${label}
+
+            `;
+
+            riskElement.style.color =
+                riskColor;
+        }
+
+
+        /* ==========================================
+           THREAT INDICATORS
+        ========================================== */
+
+        const indicatorsContainer =
+            document.getElementById(
+                "indicatorsContainer"
+            );
+
+
+        if (indicatorsContainer) {
+
+            indicatorsContainer.innerHTML = "";
+
+
+            if (
+                Array.isArray(data.indicators) &&
+                data.indicators.length > 0
+            ) {
+
+                data.indicators.forEach(
+                    indicatorName => {
+
+                        const item =
+                            document.createElement(
+                                "div"
+                            );
+
+                        item.className =
+                            "indicator";
+
+
+                        item.innerHTML = `
+
+                            <div class="ind-icon">
+                                ⚠
+                            </div>
+
+                            <div class="ind-text">
+
+                                <strong>
+                                    ${escapeHtml(
+                                        indicatorName
+                                    )}
+                                </strong>
+
+                                <small>
+                                    Detected by the phishing analysis engine.
+                                </small>
+
+                            </div>
+
+                            <div class="severity">
+                                ${escapeHtml(
+                                    severity
+                                )}
+                            </div>
+
+                        `;
+
+
+                        indicatorsContainer
+                            .appendChild(item);
+
+                    }
+                );
+
+            } else {
+
+                indicatorsContainer.innerHTML = `
+
+                    <div class="indicator">
+
+                        <div class="ind-icon">
+                            ✓
+                        </div>
+
+                        <div class="ind-text">
+
+                            <strong>
+                                No significant indicators
+                            </strong>
+
+                            <small>
+                                The model did not identify strong phishing indicators.
+                            </small>
+
+                        </div>
+
+                        <div class="severity">
+                            LOW
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        /* ==========================================
+           AI EXPLANATION
+        ========================================== */
+
+        const aiMessage =
+            document.getElementById(
+                "aiExplanation"
+            );
+
+
+        if (aiMessage) {
+
+            aiMessage.textContent =
+                data.explanation ||
+                "No explanation available.";
+
+        }
+
+
+        /* ==========================================
+           ATTACK TYPE
+        ========================================== */
+
+        console.log(
+            "Attack type:",
+            data.attack_type
+        );
+
+
+        /* ==========================================
+           URL INTELLIGENCE
+        ========================================== */
+
+        const urlData =
+            data.url_analysis;
+
+
+        if (urlData) {
+
+            const urlScore =
+                document.getElementById(
+                    "urlRiskScore"
+                );
+
+            if (urlScore) {
+
+                urlScore.textContent =
+                    `${urlData.risk_score ?? 0} / 100`;
+
+            }
+
+
+            const domain =
+                document.getElementById(
+                    "domainReputation"
+                );
+
+            if (domain) {
+
+                domain.textContent =
+                    urlData.domain_reputation ||
+                    "Analyzed";
+
+            }
+
+
+            const https =
+                document.getElementById(
+                    "httpsStatus"
+                );
+
+            if (https) {
+
+                https.textContent =
+                    urlData.https !== undefined
+                        ? (
+                            urlData.https
+                                ? "Present"
+                                : "Missing"
+                        )
+                        : "Analyzed";
+
+            }
+
+
+            const brand =
+                document.getElementById(
+                    "brandMatch"
+                );
+
+            if (brand) {
+
+                brand.textContent =
+                    urlData.brand_match ||
+                    "Analyzed";
+
+            }
+
+        }
+
+
+        /* ==========================================
+           FINISHED
+        ========================================== */
+
+        button.disabled =
+            false;
+
+        button.innerHTML =
+            "↻ Analyze Again";
+
+
+        showToast(
+            `Analysis complete • ${label}`
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Analysis error:",
+            error
+        );
+
+
+        showToast(
+            "Could not connect to the AI backend."
+        );
+
+
+        button.disabled =
+            false;
+
+        button.innerHTML =
+            "✦ Analyze Email With AI";
+
+
+        state.textContent =
+            "ANALYSIS FAILED";
+
+        state.style.color =
+            "#f87171";
+
+    }
+
 }
 
 
-/* ===============================
+/* ============================================================
+   SECURITY: ESCAPE HTML
+============================================================ */
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        String(value);
+
+    return div.innerHTML;
+}
+
+
+/* ============================================================
+   TELEMETRY
+============================================================ */
+
+let telemetryStep = 0;
+
+
+function cycleTelemetry() {
+
+    const states = [
+
+        [
+            "Threat activity elevated",
+            "Credential phishing signals are trending above baseline.",
+            "+18.6%",
+            "VS. 7-DAY BASELINE"
+        ],
+
+        [
+            "Credential lures detected",
+            "Seven campaigns share the same account verification pattern.",
+            "07",
+            "ACTIVE CAMPAIGNS"
+        ],
+
+        [
+            "Containment window stable",
+            "No new malware indicators observed in the last 15 minutes.",
+            "04:12",
+            "UNTIL NEXT SWEEP"
+        ]
+
+    ];
+
+
+    telemetryStep =
+        (telemetryStep + 1) %
+        states.length;
+
+
+    const current =
+        states[telemetryStep];
+
+
+    document.getElementById(
+        "telemetryTitle"
+    ).textContent =
+        current[0];
+
+
+    document.getElementById(
+        "telemetryCopy"
+    ).textContent =
+        current[1];
+
+
+    document.getElementById(
+        "telemetryDelta"
+    ).textContent =
+        current[2];
+
+
+    document.getElementById(
+        "telemetryMeta"
+    ).textContent =
+        current[3];
+
+
+    showToast(
+        "Telemetry channel updated"
+    );
+}
+
+
+/* ============================================================
    TREND CHART
-================================ */
+============================================================ */
 
 new Chart(
-
     document.getElementById("trendChart"),
-
     {
 
-        type:"line",
+        type: "line",
 
-        data:{
+        data: {
 
-            labels:[
+            labels: [
                 "Mon",
                 "Tue",
                 "Wed",
@@ -2096,13 +4329,13 @@ new Chart(
                 "Sun"
             ],
 
-            datasets:[
+            datasets: [
 
                 {
 
-                    label:"Threats",
+                    label: "Threats",
 
-                    data:[
+                    data: [
                         12,
                         19,
                         14,
@@ -2112,18 +4345,18 @@ new Chart(
                         43
                     ],
 
-                    borderColor:"#ef4444",
+                    borderColor: "#ef4444",
 
                     backgroundColor:
                         "rgba(239,68,68,.08)",
 
-                    fill:true,
+                    fill: true,
 
-                    tension:.45,
+                    tension: .45,
 
-                    borderWidth:2,
+                    borderWidth: 2,
 
-                    pointRadius:3,
+                    pointRadius: 3,
 
                     pointBackgroundColor:
                         "#ef4444"
@@ -2132,9 +4365,9 @@ new Chart(
 
                 {
 
-                    label:"Safe",
+                    label: "Safe",
 
-                    data:[
+                    data: [
                         44,
                         52,
                         48,
@@ -2144,16 +4377,16 @@ new Chart(
                         73
                     ],
 
-                    borderColor:"#3b82f6",
+                    borderColor: "#3b82f6",
 
                     backgroundColor:
                         "transparent",
 
-                    tension:.45,
+                    tension: .45,
 
-                    borderWidth:2,
+                    borderWidth: 2,
 
-                    pointRadius:2
+                    pointRadius: 2
 
                 }
 
@@ -2161,25 +4394,25 @@ new Chart(
 
         },
 
-        options:{
+        options: {
 
-            responsive:true,
+            responsive: true,
 
-            maintainAspectRatio:false,
+            maintainAspectRatio: false,
 
-            plugins:{
+            plugins: {
 
-                legend:{
+                legend: {
 
-                    labels:{
+                    labels: {
 
-                        color:"#70839a",
+                        color: "#70839a",
 
-                        font:{
-                            size:8
+                        font: {
+                            size: 8
                         },
 
-                        boxWidth:9
+                        boxWidth: 9
 
                     }
 
@@ -2187,32 +4420,44 @@ new Chart(
 
             },
 
-            scales:{
+            scales: {
 
-                x:{
+                x: {
 
-                    grid:{
-                        color:"rgba(148,163,184,.04)"
+                    grid: {
+                        color:
+                            "rgba(148,163,184,.04)"
                     },
 
-                    ticks:{
-                        color:"#52657c",
-                        font:{size:8}
+                    ticks: {
+
+                        color: "#52657c",
+
+                        font: {
+                            size: 8
+                        }
+
                     }
 
                 },
 
-                y:{
+                y: {
 
-                    beginAtZero:true,
+                    beginAtZero: true,
 
-                    grid:{
-                        color:"rgba(148,163,184,.04)"
+                    grid: {
+                        color:
+                            "rgba(148,163,184,.04)"
                     },
 
-                    ticks:{
-                        color:"#52657c",
-                        font:{size:8}
+                    ticks: {
+
+                        color: "#52657c",
+
+                        font: {
+                            size: 8
+                        }
+
                     }
 
                 }
@@ -2222,67 +4467,68 @@ new Chart(
         }
 
     }
-
 );
 
 
-/* ===============================
+/* ============================================================
    DONUT CHART
-================================ */
+============================================================ */
 
 new Chart(
-
     document.getElementById("donutChart"),
-
     {
 
-        type:"doughnut",
+        type: "doughnut",
 
-        data:{
+        data: {
 
-            labels:[
+            labels: [
                 "Phishing",
                 "Suspicious",
                 "Malware",
                 "Safe"
             ],
 
-            datasets:[{
+            datasets: [
 
-                data:[
-                    61,
-                    24,
-                    9,
-                    6
-                ],
+                {
 
-                backgroundColor:[
-                    "#ef4444",
-                    "#f59e0b",
-                    "#3b82f6",
-                    "#22c55e"
-                ],
+                    data: [
+                        61,
+                        24,
+                        9,
+                        6
+                    ],
 
-                borderWidth:0,
+                    backgroundColor: [
+                        "#ef4444",
+                        "#f59e0b",
+                        "#3b82f6",
+                        "#22c55e"
+                    ],
 
-                hoverOffset:8
+                    borderWidth: 0,
 
-            }]
+                    hoverOffset: 8
+
+                }
+
+            ]
 
         },
 
-        options:{
+        options: {
 
-            responsive:true,
+            responsive: true,
 
-            maintainAspectRatio:false,
+            maintainAspectRatio: false,
 
-            cutout:"72%",
+            cutout: "72%",
 
-            plugins:{
+            plugins: {
 
-                legend:{
-                    display:false
+                legend: {
+                    display: false
                 }
 
             }
@@ -2290,8 +4536,14 @@ new Chart(
         }
 
     }
-
 );
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+updateEmailPreview();
 
 </script>
 

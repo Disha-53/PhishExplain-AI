@@ -19,3 +19,6 @@ __pycache__/
 *.py[cod]
 *.env
 !.env.example
+
+# Large training dataset
+training/data/
