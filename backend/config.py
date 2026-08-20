@@ -34,5 +34,9 @@ def cors_origins() -> list[str]:
     if configured.strip():
         return [origin.strip() for origin in configured.split(",") if origin.strip()]
     if ENVIRONMENT == "development":
-        return ["http://localhost:8000", "http://127.0.0.1:8000"]
+        return [
+            "null",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
     return []
