@@ -4055,9 +4055,12 @@ ${emailText}`;
         );
 
 
-        showToast(
-            "Could not connect to the AI backend."
-        );
+        const message = error && error.message
+            ? error.message
+            : "Could not connect to the AI backend.";
+
+        showToast(message);
+        setBackendStatus(message, "#f87171");
 
 
         button.disabled =
