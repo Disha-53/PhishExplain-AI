@@ -2592,6 +2592,10 @@ header p{
 
         </div>
 
+        <div class="backend-status" id="backendStatus" aria-live="polite">
+            Checking backend connection...
+        </div>
+
     </div>
 
 
@@ -3503,8 +3507,6 @@ const REQUEST_TIMEOUT_MS = 10000;
    MAIN AI EMAIL ANALYSIS
 ============================================================ */
 
-async function analyzeEmail() {
-
 function apiBaseUrl(){
     const configured = window.PHISHEXPLAIN_API_URL || window.localStorage.getItem("phishExplainApiUrl");
     return (configured || DEFAULT_API_URL).replace(/\/$/, "");
@@ -3536,9 +3538,11 @@ async function backendRequest(path, options = {}){
     }
 }
 
-/*
 function setBackendStatus(message, color){
     const status = document.getElementById("backendStatus");
+    if(!status){
+        return;
+    }
     status.textContent = message;
     status.style.color = color || "#718399";
 }
@@ -3547,135 +3551,18 @@ async function checkBackend(){
     try{
         await backendRequest("/health");
         setBackendStatus("Backend connected", "#4ade80");
-        return true;
     }catch(error){
         setBackendStatus(error.message || "Backend unavailable", "#f87171");
-        return false;
     }
-}
-
-function addText(parent, tag, className, text){
-    const element = document.createElement(tag);
-    if(className){
-        element.className = className;
-    }
-    element.textContent = text;
-    parent.appendChild(element);
-    return element;
-}
-
-function renderIndicators(indicators){
-    const container = document.getElementById("indicatorResults");
-    container.replaceChildren();
-    if(!indicators.length){
-        addText(container, "div", "indicator-detail", "No rule-based indicators detected.");
-        return;
-    }
-    indicators.forEach((name, index) => {
-        const item = document.createElement("div");
-        item.className = "indicator";
-        item.tabIndex = 0;
-        addText(item, "div", "ind-icon", "•");
-        const text = addText(item, "div", "ind-text", "");
-        addText(text, "strong", "", name);
-        addText(text, "small", "", "Observable rule-based indicator.");
-        addText(item, "div", "severity", index < 3 ? "HIGH" : "MED");
-        container.appendChild(item);
-    });
-}
-
-function renderXai(features){
-    const container = document.getElementById("xaiResults");
-    container.replaceChildren();
-    addText(container, "b", "", "MODEL EVIDENCE");
-    if(!features.length){
-        addText(container, "small", "", "No model-derived feature evidence returned.");
-        return;
-    }
-    features.forEach((feature, index) => {
-        const detail = addText(container, "small", "", `${String(index + 1).padStart(2, "0")} ${feature.feature}: ${feature.direction || "contribution"} (${feature.impact})`);
-        detail.style.display = "block";
-    });
-}
-
-function renderKnowledge(knowledge){
-    const container = document.getElementById("knowledgeResults");
-    container.replaceChildren();
-    addText(container, "b", "", "RAG KNOWLEDGE");
-    const results = knowledge && Array.isArray(knowledge.results) ? knowledge.results : [];
-    if(!results.length){
-        addText(container, "small", "", "No retrieved cybersecurity knowledge is available.");
-        return;
-    }
-    results.slice(0, 3).forEach(item => {
-        const title = item.title || "Knowledge result";
-        const text = item.text || item.content || "";
-        addText(container, "small", "", `${title}: ${text.slice(0, 220)}`);
-    });
-}
-
-function renderResult(data){
-    const score = Math.max(0, Math.min(Number(data.risk_score) || 0, 100));
-    const severity = String(data.severity || "LOW").toUpperCase();
-    document.getElementById("score").textContent = String(score);
-    document.getElementById("riskLabel").textContent = `${severity} / ${data.label || "UNKNOWN"}`;
-    document.getElementById("confidenceValue").textContent = `${score}%`;
-    document.getElementById("confidenceBar").style.width = `${score}%`;
-    document.getElementById("analysisState").textContent = "ANALYSIS COMPLETE";
-    document.getElementById("analysisState").style.color = severity === "LOW" ? "#4ade80" : "#f87171";
-
-    renderIndicators(Array.isArray(data.indicators) ? data.indicators : []);
-    renderXai(Array.isArray(data.xai) ? data.xai : []);
-    renderKnowledge(data.knowledge);
-    document.getElementById("explanationText").textContent = data.explanation || "No explanation returned.";
-    document.getElementById("recommendationResult").replaceChildren();
-    addText(document.getElementById("recommendationResult"), "b", "", "RECOMMENDATION");
-    addText(document.getElementById("recommendationResult"), "small", "", data.recommendation || "Verify independently through official channels.");
-
-    const url = data.url_analysis || {};
-    document.querySelector("#urlResults .url-box").textContent = url.is_valid ? document.getElementById("dashboard-url").value.trim() : "No valid URL analyzed.";
-    document.getElementById("urlReputation").textContent = url.label || "—";
-    document.getElementById("urlHttps").textContent = (url.facts || []).some(fact => fact === "HTTPS is present.") ? "Present" : "Not detected";
-    document.getElementById("urlBrandMatch").textContent = "Not evaluated";
-    document.getElementById("urlRiskScore").textContent = `${url.risk_score ?? 0} / 100`;
 }
 
 async function analyzeEmail(){
-    const button = document.getElementById("analyze");
-    const text = document.getElementById("dashboard-text").value.trim();
-    const url = document.getElementById("dashboard-url").value.trim();
-    if(!text && !url){
-        setBackendStatus("Provide message text, a URL, or both.", "#fbbf24");
-        return;
-    }
+    const button =
+        document.getElementById("analyze");
 
-    button.disabled = true;
-    button.textContent = "⟳ Analyzing with FastAPI...";
-    document.getElementById("analysisState").textContent = "WAITING FOR BACKEND...";
-    document.getElementById("analysisState").style.color = "#fbbf24";
-    setBackendStatus("Sending analysis request...", "#fbbf24");
-    try{
-        const data = await backendRequest("/analyze", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({text, url})
-        });
-        renderResult(data);
-        setBackendStatus("Backend connected • analysis received", "#4ade80");
-        showToast("Analysis complete");
-    }catch(error){
-        document.getElementById("analysisState").textContent = "ANALYSIS FAILED";
-        document.getElementById("analysisState").style.color = "#f87171";
-        setBackendStatus(error.message || "Backend unavailable", "#f87171");
-        showToast(error.message || "Analysis failed");
-    }finally{
-        button.disabled = false;
-        button.textContent = "↻ Analyze Again";
-    }
-}
+    const score =
+        document.getElementById("score");
 
-checkBackend();
-*/
     const state =
         document.getElementById("analysisState");
 
@@ -3767,42 +3654,16 @@ ${emailText}`;
            SEND TO FASTAPI
         ========================================== */
 
-        const response =
-            await fetch(
-                "http://127.0.0.1:8000/analyze",
-                {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-
-                        text: completeEmail,
-
-                        url: url
-
-                    })
-
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Backend request failed: " +
-                response.status
-            );
-
-        }
-
-
-        const data =
-            await response.json();
+        const data = await backendRequest("/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                text: completeEmail,
+                url: url
+            })
+        });
 
 
         console.log(
@@ -4544,6 +4405,7 @@ new Chart(
 ============================================================ */
 
 updateEmailPreview();
+checkBackend();
 
 </script>
 
